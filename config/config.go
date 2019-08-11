@@ -1,7 +1,6 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 
 	_ "github.com/lib/pq"
@@ -31,12 +30,4 @@ func (c *DBCredentials) ConnectionString() string {
 
 func (c *Configuration) DBCredentials() *DBCredentials {
 	return c.dbCredentials
-}
-
-func (c *Configuration) DB() *sql.DB {
-	db, err := sql.Open("postgres", Config.DBCredentials().ConnectionString())
-	if err != nil {
-		panic(err)
-	}
-	return db
 }

@@ -1,14 +1,13 @@
 package publication
 
-type Meta struct {
-	Keywords    []string
-	Description string
-}
 type Attrs struct {
-	Meta
-	Title   string
-	Content string
+	MetaKeywords    []string
+	MetaDescription string
+	Title           string
+	Content         string
+	CreatedAt       string
 }
+
 type Publication struct {
 	attrs *Attrs
 }
@@ -17,10 +16,10 @@ func New(attrs *Attrs) *Publication {
 	return &Publication{attrs}
 }
 func (p *Publication) MetaKeywords() []string {
-	return p.attrs.Keywords
+	return p.attrs.MetaKeywords
 }
 func (p *Publication) MetaDescription() string {
-	return p.attrs.Description
+	return p.attrs.MetaDescription
 }
 func (p *Publication) Title() string {
 	return p.attrs.Title

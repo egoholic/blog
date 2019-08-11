@@ -9,8 +9,12 @@ import (
 var _ = Describe("rubric", func() {
 	Describe("accessors", func() {
 		var (
-			meta   = Meta{Keywords: []string{"some", "rubric"}, Description: "Some rubric"}
-			attrs  = Attrs{Meta: meta, Title: "Some Rubric", Content: "Some rubric content."}
+			attrs = Attrs{
+				MetaKeywords:    []string{"some", "rubric"},
+				MetaDescription: "Some rubric",
+				Title:           "Some Rubric",
+				Description:     "Some rubric description.",
+			}
 			rubric = New(&attrs)
 		)
 		Describe(".MetaKeywords()", func() {
@@ -28,9 +32,9 @@ var _ = Describe("rubric", func() {
 				Expect(rubric.Title()).To(Equal("Some Rubric"))
 			})
 		})
-		Describe(".Content()", func() {
-			It("returns content", func() {
-				Expect(rubric.Content()).To(Equal("Some rubric content."))
+		Describe(".Description()", func() {
+			It("returns description", func() {
+				Expect(rubric.Description()).To(Equal("Some rubric description."))
 			})
 		})
 	})

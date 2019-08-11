@@ -9,8 +9,13 @@ import (
 var _ = Describe("publication", func() {
 	Describe("accessors", func() {
 		var (
-			meta        = Meta{Keywords: []string{"some", "publication"}, Description: "Some publication"}
-			attrs       = Attrs{Meta: meta, Title: "Some Publication", Content: "Some publication content."}
+			attrs = Attrs{
+				MetaKeywords:    []string{"some", "publication"},
+				MetaDescription: "Some publication",
+				Title:           "Some Publication",
+				Content:         "Some publication content.",
+				CreatedAt:       "",
+			}
 			puplication = New(&attrs)
 		)
 		Describe(".MetaKeywords()", func() {

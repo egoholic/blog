@@ -3,14 +3,16 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ceb390b53119a93c3987ba4aeb3836f6f61158617cb9d4c38513f06e991f8ccd"
+  digest = "1:88fddbb598fe11f0904607be699710d04dcbfb60a3daaa5eb850e5122fb3a933"
   name = "github.com/egoholic/router"
   packages = [
     ".",
+    "handler",
+    "node",
     "params",
   ]
   pruneopts = "UT"
-  revision = "f8f0f7f8f2198f038c603d466bdd35ad879f49b5"
+  revision = "337d6bd4e9365e1290a83205943b03a2cec8c835"
 
 [[projects]]
   branch = "master"
@@ -100,11 +102,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fdfd985fe7956d77128572032636b5c1b7b58a81acd7089e96923e2f9539c573"
+  digest = "1:8d30f87f59931cdd4d45e450185216a34eba66c1f1f68a314ac0fa49d19f9826"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "51ab0e2deafac1f46c46ad59cf0921be2f180c3d"
+  revision = "9eafafc0a87e0fd0aeeba439a4573537970c44c7"
 
 [[projects]]
   digest = "1:8a0baffd5559acaa560f854d7d525c02f4fec2d4f8a214398556fb661a10f6e0"

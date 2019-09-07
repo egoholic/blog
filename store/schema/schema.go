@@ -7,6 +7,7 @@ import (
 	"time"
 
 	. "github.com/egoholic/blog/config"
+	_ "github.com/lib/pq"
 )
 
 func Apply(initCtx context.Context) (err error) {

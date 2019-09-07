@@ -2,32 +2,33 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"strings"
 
 	"github.com/egoholic/blog/domain/publication"
 	"github.com/egoholic/blog/domain/rubric"
-	"github.com/egoholic/blog/store/connector"
+	_ "github.com/lib/pq"
 )
 
 type Repository struct {
-	connector *connector.Connector
+	db *sql.DB
 }
 
-func New(connector *connector.Connector) *Repository {
-	return &Repository{connector: connector}
+func New(db *sql.DB) *Repository {
+	return &Repository{db: db}
 }
 
 func (r *Repository) GetRecentPublications(ctx context.Context) (publications []*publication.Publication) {
-	db := r.connector.Connection()
-	defer db.Close()
-
-	rows, err := db.Query(`SELECT meta_keywords, meta_description, title, content, created_at
+	rows, err := r.db.QueryContext(ctx, `SELECT meta_keywords, meta_description, title, content, created_at
 						             FROM publications
 						             ORDER created_at BY DESC
 					               LIMIT 10;`)
 	defer rows.Close()
 	for rows.Next() {
 		var attrs publication.Attrs
-		err := rows.Scan(&attrs.MetaKeywords, &attrs.MetaDescription, &attrs.Title, &attrs.Content, &attrs.CreatedAt)
+		var keywords string
+		err := rows.Scan(&keywords, &attrs.MetaDescription, &attrs.Title, &attrs.Content, &attrs.CreatedAt)
+		attrs.MetaKeywords = strings.Split(keywords, ",")
 		if err != nil {
 
 		}
@@ -41,10 +42,7 @@ func (r *Repository) GetRecentPublications(ctx context.Context) (publications []
 }
 
 func (r *Repository) GetAllRubrics(ctx context.Context) (rubrics []*rubric.Rubric) {
-	db := r.connector.Connection()
-	defer db.Close()
-
-	rows, err := db.Query(`SELECT meta_keywords, meta_description, title, description
+	rows, err := r.db.QueryContext(ctx, `SELECT meta_keywords, meta_description, title, description
 						             FROM rubric
 						             ORDER title BY ASC;`)
 	defer rows.Close()

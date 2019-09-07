@@ -1,9 +1,10 @@
 package repository_test
 
 import (
+	"database/sql"
+
 	"github.com/egoholic/blog/config"
 	. "github.com/egoholic/blog/repository"
-	"github.com/egoholic/blog/store/connector"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -11,9 +12,10 @@ import (
 var _ = Describe("repository", func() {
 	Describe("New()", func() {
 		It("returns repository", func() {
-			credsKeeper := &config.DBCredentials{Host: "localhost", Port: 5432, User: "postgres", Password: "", DBName: ""}
-			connector := connector.New(credsKeeper)
-			repo := New(connector)
+			creds := &config.DBCredentials{Host: "localhost", Port: 5432, User: "postgres", Password: "", DBName: ""}
+			connStr, _ := creds.ConnectionString()
+			db, _ := sql.Open("postgres", connStr)
+			repo := New(db)
 			Expect(repo).NotTo(BeNil())
 			Expect(repo).To(BeAssignableToTypeOf(&Repository{}))
 		})

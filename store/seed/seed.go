@@ -9,9 +9,13 @@ import (
 )
 
 var (
-	__LAST_PUBLICATION_ID = 0
-	__LAST_RUBRIC_ID      = 0
+	__LAST_ID = map[string]int{}
 )
+
+func init() {
+	__LAST_ID["publications"] = 0
+	__LAST_ID["rubrics"] = 0
+}
 
 func Truncate(db *sql.DB, names ...string) (err error) {
 	for _, name := range names {
@@ -19,6 +23,7 @@ func Truncate(db *sql.DB, names ...string) (err error) {
 		if err != nil {
 			return
 		}
+		__LAST_ID[name] = 0
 	}
 	return
 }
@@ -34,15 +39,17 @@ func Many(ntimes int, db *sql.DB, factory func(*sql.DB) (sql.Result, error)) (re
 	return
 }
 func CreatePublication(db *sql.DB) (result sql.Result, err error) {
+	pid := __LAST_ID["publications"]
 	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              created_at) VALUES
-																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day');`, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID)
-	__LAST_PUBLICATION_ID = __LAST_PUBLICATION_ID + 1
+																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day');`, pid, pid, pid, pid, pid, pid)
+	__LAST_ID["publications"]++
 	return db.Exec(query)
 }
 func CreateRubric(db *sql.DB) (result sql.Result, err error) {
+	rid := __LAST_ID["rubrics"]
 	query := fmt.Sprintf(`INSERT INTO rubrics (slug,   meta_keywords, meta_description, title,  description) VALUES
-															              ('%dth', 'rubric, %d',  '%d Rubric',      '%dTH', 'My %dth rubric.');`, __LAST_RUBRIC_ID, __LAST_RUBRIC_ID, __LAST_RUBRIC_ID, __LAST_RUBRIC_ID, __LAST_RUBRIC_ID)
-	__LAST_RUBRIC_ID = __LAST_RUBRIC_ID + 1
+															              ('%dth', 'rubric, %d',  '%d Rubric',      '%dTH', 'My %dth rubric.');`, rid, rid, rid, rid, rid)
+	__LAST_ID["rubrics"]++
 	return db.Exec(query)
 }
 func Seed() (err error) {

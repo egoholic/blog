@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	. "github.com/egoholic/blog/store/seed"
@@ -9,8 +8,7 @@ import (
 
 func main() {
 	fmt.Printf("\n\t\t----- Starting populating ... -----\n")
-	ctx := context.Background()
-	err := Seed(ctx)
+	err := Seed()
 	if err != nil {
 		fmt.Printf("Error occured during DB populating: `%s`\n", err.Error())
 		panic(err)

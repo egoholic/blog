@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	. "github.com/egoholic/blog/store/schema"
@@ -9,8 +8,7 @@ import (
 
 func main() {
 	fmt.Printf("\n\t\t----- Starting migration ... -----\n")
-	ctx := context.Background()
-	err := Apply(ctx)
+	err := Apply()
 	if err != nil {
 		fmt.Printf("Error occured during migrating: `%s`\n", err.Error())
 		panic(err)

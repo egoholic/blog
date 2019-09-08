@@ -19,7 +19,7 @@ var _ = Describe("publication", func() {
 		puplication := New(&attrs)
 		Describe(".Attrs()", func() {
 			It("returns meta-keywords", func() {
-				Expect(puplication.Attrs()).To(Equal(attrs))
+				Expect(puplication.Attrs()).To(Equal(&attrs))
 			})
 		})
 	})

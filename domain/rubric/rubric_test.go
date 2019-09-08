@@ -19,7 +19,7 @@ var _ = Describe("rubric", func() {
 
 		Describe(".Attrs()", func() {
 			It("returns meta-keywords", func() {
-				Expect(rubric.Attrs()).To(Equal(attrs))
+				Expect(rubric.Attrs()).To(Equal(&attrs))
 			})
 		})
 	})

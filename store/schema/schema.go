@@ -39,9 +39,10 @@ func Apply(initCtx context.Context) (err error) {
 		return
 	}
 	query := `CREATE TABLE publications (
+		  slug             varchar(255) PRIMARY KEY,
 			meta_keywords    text NOT NULL,
 	    meta_description text NOT NULL,
-	    title            varchar(255) PRIMARY KEY,
+	    title            varchar(255),
 	    content          text NOT NULL,
 	    created_at       timestamp NOT NULL
 		);`
@@ -52,9 +53,10 @@ func Apply(initCtx context.Context) (err error) {
 	fmt.Println("-- table `publications` has been created")
 
 	query = `CREATE TABLE rubrics (
+		  slug             varchar(255) PRIMARY KEY,
 			meta_keywords    text NOT NULL,
 	    meta_description text NOT NULL,
-	    title            varchar(255) PRIMARY KEY,
+	    title            varchar(255),
 	    description      text NOT NULL
 		);`
 	_, err = db.ExecContext(ctx, query)

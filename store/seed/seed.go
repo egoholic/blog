@@ -15,7 +15,7 @@ var (
 
 func Truncate(db *sql.DB, names ...string) (err error) {
 	for _, name := range names {
-		_, err = db.Exec(fmt.Sprintf("TRUNCATE %s CONTINUE IDENTITY;", name))
+		_, err = db.Exec(fmt.Sprintf("TRUNCATE %s RESTART IDENTITY;", name))
 		if err != nil {
 			return
 		}
@@ -35,7 +35,7 @@ func Many(ntimes int, db *sql.DB, factory func(*sql.DB) (sql.Result, error)) (re
 }
 func CreatePublication(db *sql.DB) (result sql.Result, err error) {
 	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              created_at) VALUES
-																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', CURRENT_DATE + INTERVAL '%d day');`, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID)
+																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day');`, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID, __LAST_PUBLICATION_ID)
 	__LAST_PUBLICATION_ID = __LAST_PUBLICATION_ID + 1
 	return db.Exec(query)
 }

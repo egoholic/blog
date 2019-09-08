@@ -35,7 +35,6 @@ func (r *Repository) GetRecentPublications(ctx context.Context) (publications []
 		var attrs publication.Attrs
 		err := rows.Scan(&attrs.Slug, &attrs.MetaKeywords, &attrs.MetaDescription, &attrs.Title, &attrs.Content, &attrs.CreatedAt)
 		if err != nil {
-			fmt.Printf("ERR: %#v", publications)
 			panic(err)
 		}
 		publications = append(publications, publication.New(&attrs))

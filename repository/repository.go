@@ -46,15 +46,22 @@ func (r *Repository) GetRecentPublications(ctx context.Context) (publications []
 	return publications
 }
 func (r *Repository) GetAllRubrics(ctx context.Context) (rubrics []*rubric.Rubric) {
-	rows, err := r.db.QueryContext(ctx, `SELECT meta_keywords, meta_description, title, description
-						             FROM rubric
-						             ORDER title BY ASC;`)
-	defer rows.Close()
+	rows, err := r.db.QueryContext(ctx, `SELECT slug, meta_keywords, meta_description, title, description
+						             FROM rubrics
+						             ORDER BY title ASC;`)
+	if err != nil {
+		panic(err)
+	}
+	if rows != nil {
+		defer rows.Close()
+	} else {
+		panic(errors.New("no rows error"))
+	}
 	for rows.Next() {
 		var attrs rubric.Attrs
-		err := rows.Scan(&attrs.MetaKeywords, &attrs.MetaDescription, &attrs.Title, &attrs.Description)
+		err := rows.Scan(&attrs.Slug, &attrs.MetaKeywords, &attrs.MetaDescription, &attrs.Title, &attrs.Description)
 		if err != nil {
-
+			panic(err)
 		}
 		rubrics = append(rubrics, rubric.New(&attrs))
 	}

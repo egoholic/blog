@@ -17,12 +17,7 @@ var _ = Describe("repository", func() {
 	db, _ := sql.Open("postgres", connStr)
 	//defer db.Close()
 	repo := New(db)
-	BeforeEach(func() {
-		Truncate(db, "publications", "rubrics")
-	})
-	AfterEach(func() {
-		Truncate(db, "publications", "rubrics")
-	})
+
 	Describe("New()", func() {
 		It("returns repository", func() {
 			Expect(repo).NotTo(BeNil())
@@ -31,6 +26,12 @@ var _ = Describe("repository", func() {
 	})
 	Describe("Repository", func() {
 		Describe(".GetRecentPublications()", func() {
+			BeforeEach(func() {
+				Truncate(db, "publications")
+			})
+			AfterEach(func() {
+				Truncate(db, "publications")
+			})
 			Context(fmt.Sprintf("when there are more than %d publications", RECENT_NUMBER), func() {
 				It(fmt.Sprintf("returns only %d publications", RECENT_NUMBER), func() {
 					Many(RECENT_NUMBER+1, db, CreatePublication)
@@ -48,7 +49,6 @@ var _ = Describe("repository", func() {
 					Expect(publications[9].Attrs().Title).To(Equal("1th PUBLICATION"))
 				})
 			})
-
 			Context(fmt.Sprintf("when there are less than %d publications", RECENT_NUMBER), func() {
 				It(fmt.Sprintf("returns less than %d publications", RECENT_NUMBER), func() {
 					Many(RECENT_NUMBER-1, db, CreatePublication)
@@ -67,6 +67,21 @@ var _ = Describe("repository", func() {
 			})
 		})
 		Describe(".GetAllRubrics()", func() {
+			BeforeEach(func() {
+				Truncate(db, "rubrics")
+			})
+			AfterEach(func() {
+				Truncate(db, "rubrics")
+			})
+			It("returns all available rubrics", func() {
+				rubricsLen := 3
+				Many(rubricsLen, db, CreateRubric)
+				rubrics := repo.GetAllRubrics(context.Background())
+				Expect(rubrics).To(HaveLen(rubricsLen))
+				Expect(rubrics[0].Attrs().Title).To(Equal("0TH"))
+				Expect(rubrics[1].Attrs().Title).To(Equal("1TH"))
+				Expect(rubrics[2].Attrs().Title).To(Equal("2TH"))
+			})
 		})
 	})
 })

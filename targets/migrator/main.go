@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	. "github.com/egoholic/blog/store/schema"
+	. "github.com/egoholic/blog/lib/store/schema"
 )
 
 func main() {

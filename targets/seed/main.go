@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	. "github.com/egoholic/blog/store/seed"
+	. "github.com/egoholic/blog/lib/store/seed"
 )
 
 func main() {

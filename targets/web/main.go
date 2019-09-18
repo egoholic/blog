@@ -28,16 +28,16 @@ func main() {
 	logger.Println("server starting...")
 	connStr, err = Config.DBCredentials().ConnectionString()
 	if err != nil {
-		logger.Fatalf("ERROR1: %s\n", err.Error())
+		logger.Fatalf("ERROR: %s\n", err.Error())
 	}
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		logger.Fatalf("ERROR2: %s\n", err.Error())
+		logger.Fatalf("ERROR: %s\n", err.Error())
 	}
 	defer db.Close()
 	err = db.Ping()
 	if err != nil {
-		logger.Fatalf("ERROR3: %s\n", err.Error())
+		logger.Fatalf("ERROR: %s\n", err.Error())
 	}
 
 	router := rtr.New()

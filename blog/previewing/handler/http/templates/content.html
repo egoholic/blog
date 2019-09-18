@@ -1,22 +1,21 @@
-{{define "main"}}
+{{define "content"}}
 <div id="main">
   <div id="recent-publications">
     <ol>
-    {{range .Recent}}
+    {{range .RecentPublications}}
       <li class="publication-preview">
-        <a href="">{{.Title}}</a>
+        <a href="/p/{{.Slug}}">{{.Title}}</a>
       </li>
     {{end}}
     </ol>
   </div>
   <div id="top-publications">
     <ol>
-    {{range .Popular}}
+    {{range .PopularPublications}}
       <li class="publication-preview">
-        <a href="">{{.Title}}</a>
+        <a href="/p/{{.Slug}}">{{.Title}}</a>
       </li>
     {{end}}
     </ol>
   </div>
-</main>
-{{end}}
+</main>{{end}}

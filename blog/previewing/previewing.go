@@ -11,8 +11,6 @@ type (
 	}
 	Value struct {
 		logger                      *log.Logger
-		Recent                      []*Publication
-		Popular                     []*Publication
 		popularPublicationsProvider PopularPublicationsProvider
 		recentPublicationsProvider  RecentPublicationsProvider
 	}
@@ -37,7 +35,6 @@ func (v *Value) PopularPublications() []*Publication {
 	if err != nil {
 		v.logger.Printf("ERROR-popular: %s\n", err.Error())
 	}
-	v.Popular = publications
 	return publications
 }
 
@@ -46,7 +43,5 @@ func (v *Value) RecentPublications() []*Publication {
 	if err != nil {
 		v.logger.Printf("ERROR-recent: %s\n", err.Error())
 	}
-	v.Recent = publications
-
 	return publications
 }

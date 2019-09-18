@@ -1,0 +1,22 @@
+{{define "main"}}
+<div id="main">
+  <div id="recent-publications">
+    <ol>
+    {{range .Recent}}
+      <li class="publication-preview">
+        <a href="">{{.Title}}</a>
+      </li>
+    {{end}}
+    </ol>
+  </div>
+  <div id="top-publications">
+    <ol>
+    {{range .Popular}}
+      <li class="publication-preview">
+        <a href="">{{.Title}}</a>
+      </li>
+    {{end}}
+    </ol>
+  </div>
+</main>
+{{end}}

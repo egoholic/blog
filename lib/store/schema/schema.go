@@ -44,7 +44,8 @@ func Apply() (err error) {
 	    meta_description text NOT NULL,
 	    title            varchar(255),
 	    content          text NOT NULL,
-	    created_at       timestamp NOT NULL
+			created_at       timestamp NOT NULL,
+			popularity       int
 		);`
 	_, err = db.Exec(query)
 	if err != nil {
@@ -64,5 +65,6 @@ func Apply() (err error) {
 		return
 	}
 	fmt.Println("-- table `rubrics` has been created")
+
 	return
 }

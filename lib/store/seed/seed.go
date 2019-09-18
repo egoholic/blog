@@ -1,8 +1,13 @@
 package seed
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"os"
+
+	repository "github.com/egoholic/blog/blog/previewing/repository/postgresql"
 
 	. "github.com/egoholic/blog/config"
 	_ "github.com/lib/pq"
@@ -40,8 +45,8 @@ func Many(ntimes int, db *sql.DB, factory func(*sql.DB) (sql.Result, error)) (re
 }
 func CreatePublication(db *sql.DB) (result sql.Result, err error) {
 	pid := __LAST_ID["publications"]
-	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              created_at) VALUES
-																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day');`, pid, pid, pid, pid, pid, pid)
+	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              popularity,  created_at) VALUES
+																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', 1,           CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day');`, pid, pid, pid, pid, pid, pid)
 	__LAST_ID["publications"]++
 	return db.Exec(query)
 }
@@ -80,5 +85,14 @@ func Seed() (err error) {
 		return
 	}
 	fmt.Printf("-- %d rubrics created!\n", rubricsNumber)
+
+	logger := log.New(os.Stdout, "blog", 0)
+
+	repo := repository.New(context.TODO(), db, logger)
+
+	pop, err := repo.PopularPublications()
+	fmt.Printf("\n\n%#v\n\terr:%s\n", pop, err)
+	rec, err := repo.PopularPublications()
+	fmt.Printf("\n\n%#v\n\terr:%s\n", rec, err)
 	return
 }

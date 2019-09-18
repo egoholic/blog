@@ -1,6 +1,7 @@
 {{define "content"}}
 <div id="main">
-  <div id="recent-publications">
+  <div id="recent-publications" class="publications-micro-list">
+    <h3>Recent Publications</h3>
     <ol>
     {{range .RecentPublications}}
       <li class="publication-preview">
@@ -9,7 +10,8 @@
     {{end}}
     </ol>
   </div>
-  <div id="top-publications">
+  <div id="top-publications" class="publications-micro-list">
+    <h3>Popular Publications</h3>
     <ol>
     {{range .PopularPublications}}
       <li class="publication-preview">

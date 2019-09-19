@@ -33,7 +33,7 @@ func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsP
 func (v *Value) PopularPublications() []*Publication {
 	publications, err := v.popularPublicationsProvider.PopularPublications()
 	if err != nil {
-		v.logger.Printf("ERROR-popular: %s\n", err.Error())
+		v.logger.Printf("ERROR: %s\n", err.Error())
 	}
 	return publications
 }
@@ -41,7 +41,7 @@ func (v *Value) PopularPublications() []*Publication {
 func (v *Value) RecentPublications() []*Publication {
 	publications, err := v.recentPublicationsProvider.RecentPublications()
 	if err != nil {
-		v.logger.Printf("ERROR-recent: %s\n", err.Error())
+		v.logger.Printf("ERROR: %s\n", err.Error())
 	}
 	return publications
 }

@@ -9,9 +9,12 @@ import (
 	"time"
 
 	blogPreviewing "github.com/egoholic/blog/blog/previewing/handler/http"
+	publicationReading "github.com/egoholic/blog/publication/reading/handler/http"
+
 	. "github.com/egoholic/blog/config"
 	rtr "github.com/egoholic/router"
 	"github.com/egoholic/router/handler"
+	"github.com/egoholic/router/node"
 	"github.com/egoholic/router/params"
 )
 
@@ -23,6 +26,13 @@ var (
 	db      *sql.DB
 	err     error
 )
+
+type publicationSlugForm struct{}
+
+func (f *publicationSlugForm) CheckAndPopulate(pattern string, chunk string, prms *params.Params) bool {
+	prms.Set(pattern, chunk)
+	return true
+}
 
 func main() {
 	logger.Println("server starting...")
@@ -43,7 +53,9 @@ func main() {
 	router := rtr.New()
 	root := router.Root()
 	root.GET(prepare(blogPreviewing.New), "presents recent and popular publications")
-
+	publications := root.Child("p", &node.DumbForm{})
+	publication := publications.Child(":slug", &publicationSlugForm{})
+	publication.GET(prepare(publicationReading.New), "presents selected publications")
 	logger.Println("server listens :3000 port")
 	logger.Fatal(http.ListenAndServe(":3000", router))
 }

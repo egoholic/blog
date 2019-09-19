@@ -1,13 +1,10 @@
 package seed
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"os"
-
-	repository "github.com/egoholic/blog/blog/previewing/repository/postgresql"
+	"math/rand"
+	"strings"
 
 	. "github.com/egoholic/blog/config"
 	_ "github.com/lib/pq"
@@ -20,6 +17,7 @@ var (
 func init() {
 	__LAST_ID["publications"] = 0
 	__LAST_ID["rubrics"] = 0
+	__LAST_ID["accounts"] = 0
 }
 
 func Truncate(db *sql.DB, names ...string) (err error) {
@@ -57,10 +55,34 @@ func CreateRubric(db *sql.DB) (result sql.Result, err error) {
 	__LAST_ID["rubrics"]++
 	return db.Exec(query)
 }
+func CreateAccount(db *sql.DB) (result sql.Result, err error) {
+	rid := __LAST_ID["accounts"]
+	query := fmt.Sprintf(`INSERT INTO accounts (login,          first_name,     last_name,     bio) VALUES
+															               ('account-%dth', 'Firstname-%d', 'Lastname-%d', 'I am %dth user.');`, rid, rid, rid, rid)
+	__LAST_ID["accounts"]++
+	return db.Exec(query)
+}
+
+func CreatePublicationAuthors(db *sql.DB) (result sql.Result, err error) {
+	var sb strings.Builder
+	sb.WriteString("INSERT INTO publication_authors (publication_slug, author_login) VALUES ")
+	subs := []string{}
+	for pi := 0; pi < __LAST_ID["publications"]; pi++ {
+		for ui := 0; ui < rand.Intn(__LAST_ID["accounts"])+1; ui++ {
+			subs = append(subs, (fmt.Sprintf(`('publication-%d', 'account-%dth')`, pi, ui)))
+		}
+	}
+	sb.WriteString(strings.Join(subs, ",\n"))
+	sb.WriteRune(';')
+	query := sb.String()
+	return db.Exec(query)
+}
+
 func Seed() (err error) {
 	var (
 		publicationsNumber = 20
 		rubricsNumber      = 5
+		accountsNumber     = 5
 	)
 	connStr, err := Config.DBCredentials().ConnectionString()
 	if err != nil {
@@ -86,13 +108,18 @@ func Seed() (err error) {
 	}
 	fmt.Printf("-- %d rubrics created!\n", rubricsNumber)
 
-	logger := log.New(os.Stdout, "blog", 0)
+	_, err = Many(accountsNumber, db, CreateAccount)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+	fmt.Printf("-- %d accounts created!\n", accountsNumber)
 
-	repo := repository.New(context.TODO(), db, logger)
-
-	pop, err := repo.PopularPublications()
-	fmt.Printf("\n\n%#v\n\terr:%s\n", pop, err)
-	rec, err := repo.PopularPublications()
-	fmt.Printf("\n\n%#v\n\terr:%s\n", rec, err)
+	_, err = CreatePublicationAuthors(db)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+	fmt.Println("-- publications are linked to authots!")
 	return
 }

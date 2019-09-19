@@ -1,25 +1,55 @@
 package reading
 
+import "log"
+
 type (
+	Author struct {
+		FullName string
+		Bio      string
+		Login    string
+	}
 	Publication struct {
-		Slug    string
-		Title   string
-		Content string
+		Slug       string
+		Title      string
+		Content    string
+		CreatedAt  string
+		Popularity int
 	}
-	Value             struct{}
-	PublicationSource interface {
-		BySlug(string) *Publication
+	Value struct {
+		logger              *log.Logger
+		publicationProvider PublicationProvider
+		authorsProvider     AuthorsProvider
+		slug                string
 	}
-	Destination interface {
-		Deliver(*Publication) error
+	PublicationProvider interface {
+		PublicationBySlug(string) (*Publication, error)
 	}
-	Form interface {
-		Slug() string
+	AuthorsProvider interface {
+		AuthorsOf(string) ([]*Author, error)
 	}
 )
 
-func (v *Value) Deliver(form Form, psource PublicationSource, destination Destination) {
-	slug := form.Slug()
-	publication := psource.BySlug(slug)
-	destination.Deliver(publication)
+func New(l *log.Logger, pp PublicationProvider, ap AuthorsProvider, s string) *Value {
+	return &Value{
+		logger:              l,
+		publicationProvider: pp,
+		authorsProvider:     ap,
+		slug:                s,
+	}
+}
+
+func (v *Value) Publication() *Publication {
+	publication, err := v.publicationProvider.PublicationBySlug(v.slug)
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return publication
+}
+
+func (v *Value) Authors() []*Author {
+	authors, err := v.authorsProvider.AuthorsOf(v.slug)
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return authors
 }

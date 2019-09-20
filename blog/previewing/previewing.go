@@ -3,6 +3,10 @@ package previewing
 import "log"
 
 type (
+	Rubric struct {
+		Slug  string
+		Title string
+	}
 	Publication struct {
 		Slug       string
 		Title      string
@@ -13,6 +17,7 @@ type (
 		logger                      *log.Logger
 		popularPublicationsProvider PopularPublicationsProvider
 		recentPublicationsProvider  RecentPublicationsProvider
+		rubricsProvider             RubricsProvider
 	}
 	RecentPublicationsProvider interface {
 		RecentPublications() ([]*Publication, error)
@@ -20,13 +25,17 @@ type (
 	PopularPublicationsProvider interface {
 		PopularPublications() ([]*Publication, error)
 	}
+	RubricsProvider interface {
+		Rubrics() ([]*Rubric, error)
+	}
 )
 
-func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider) *Value {
+func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider) *Value {
 	return &Value{
-		logger: l,
+		logger:                      l,
 		popularPublicationsProvider: ppp,
 		recentPublicationsProvider:  rpp,
+		rubricsProvider:             rp,
 	}
 }
 
@@ -44,4 +53,12 @@ func (v *Value) RecentPublications() []*Publication {
 		v.logger.Printf("ERROR: %s\n", err.Error())
 	}
 	return publications
+}
+
+func (v *Value) Rubrics() []*Rubric {
+	rubrics, err := v.rubricsProvider.Rubrics()
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return rubrics
 }

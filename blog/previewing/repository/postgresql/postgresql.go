@@ -26,6 +26,7 @@ var (
 	                                   created_at,
 																		 popularity
 															FROM publications ORDER BY popularity DESC LIMIT $1;`
+	rubricsQuery = `SELECT slug, title FROM rubrics ORDER BY title ASC;`
 )
 
 func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
@@ -39,8 +40,7 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
 func (r *Repository) RecentPublications() (publications []*previewing.Publication, err error) {
 	rows, err := r.db.QueryContext(r.ctx, recentPublicationsQuery, 5)
 	if err != nil {
-		r.logger.Println("recent-fuck")
-		return
+		r.logger.Panicf("ERROR: %s\n", err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -57,9 +57,7 @@ func (r *Repository) RecentPublications() (publications []*previewing.Publicatio
 func (r *Repository) PopularPublications() (publications []*previewing.Publication, err error) {
 	rows, err := r.db.QueryContext(r.ctx, popularPublicationsQuery, 5)
 	if err != nil {
-		r.logger.Println("popular-fuck")
-
-		return
+		r.logger.Panicf("ERROR: %s\n", err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -69,6 +67,23 @@ func (r *Repository) PopularPublications() (publications []*previewing.Publicati
 			return []*previewing.Publication{}, err
 		}
 		publications = append(publications, &p)
+	}
+	return
+}
+
+func (r *Repository) Rubrics() (rubrics []*previewing.Rubric, err error) {
+	rows, err := r.db.QueryContext(r.ctx, rubricsQuery)
+	if err != nil {
+		r.logger.Panicf("ERROR: %s\n", err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var r previewing.Rubric
+		err = rows.Scan(&r.Slug, &r.Title)
+		if err != nil {
+			return []*previewing.Rubric{}, err
+		}
+		rubrics = append(rubrics, &r)
 	}
 	return
 }

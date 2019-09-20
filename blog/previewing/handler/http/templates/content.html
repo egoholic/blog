@@ -1,23 +1,33 @@
 {{define "content"}}
 <div id="main">
-  <div id="recent-publications" class="publications-micro-list">
+  <div id="recent-publications" class="micro-list">
     <h3>Recent Publications</h3>
     <ol>
     {{range .RecentPublications}}
-      <li class="publication-preview">
+      <li class="micro-preview">
         <a href="/p/{{.Slug}}">{{.Title}}</a>
       </li>
     {{end}}
     </ol>
   </div>
-  <div id="top-publications" class="publications-micro-list">
+  <div id="top-publications" class="micro-list">
     <h3>Popular Publications</h3>
     <ol>
     {{range .PopularPublications}}
-      <li class="publication-preview">
+      <li class="micro-preview">
         <a href="/p/{{.Slug}}">{{.Title}}</a>
       </li>
     {{end}}
     </ol>
   </div>
+    <div id="rubrics" class="micro-list">
+      <h3>Rubrics</h3>
+      <ol>
+        {{range .Rubrics}}
+        <li class="micro-preview">
+          <a href="/r/{{.Slug}}">{{.Title}}</a>
+        </li>
+        {{end}}
+      </ol>
+    </div>
 </main>{{end}}

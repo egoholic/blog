@@ -29,8 +29,8 @@ var (
 												 a.login                            AS login
 												 FROM       accounts            AS a
 												 INNER JOIN publication_authors AS pa
-												         ON  pa.author_login     = a.login
-												         AND pa.publication_slug = $1;`
+												         ON pa.author_login     = a.login
+												        AND pa.publication_slug = $1;`
 )
 
 func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {

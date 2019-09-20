@@ -1,0 +1,15 @@
+{{define "content"}}
+<div id="main">
+  <article class="author">
+    <h1>{{.Author.FullName}}</h1>
+    {{.Author.Bio}}
+  </article>
+  <h3>Publications</h3>
+  <ol class=".publications-list">
+    {{range .Publications}}
+    <li class="publication-preview">
+      <a href="/p/{{.Slug}}"><span class="publication-title">{{.Title}}</span></a>
+    </li>
+    {{end}}
+  </ol>
+</div>{{end}}

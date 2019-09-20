@@ -4,9 +4,9 @@ import "log"
 
 type (
 	Author struct {
+		Login    string
 		FullName string
 		Bio      string
-		Login    string
 	}
 	Publication struct {
 		Slug       string

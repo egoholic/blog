@@ -1,41 +1,54 @@
 package previewing
 
+import "log"
+
 type (
 	Author struct {
-		Slug     string
+		Login    string
 		FullName string
 		Bio      string
 	}
 	Publication struct {
-		Slug    string
-		Title   string
-		Content string
+		Slug       string
+		Title      string
+		CreatedAt  string
+		Popularity int
 	}
-	Deliverable struct {
-		Author       *Author
-		Publications []*Publication
+	Value struct {
+		logger               *log.Logger
+		authorProvider       AuthorProvider
+		publicationsProvider PublicationsProvider
+		login                string
 	}
-	Value              struct{}
-	PublicationsSource interface {
-		GetListByAuthorSlug(string) []*Publication
+	AuthorProvider interface {
+		AuthorByLogin(l string) (*Author, error)
 	}
-	AuthorSource interface {
-		BySlug(string) *Author
-	}
-	Destination interface {
-		Deliver(*Deliverable) error
-	}
-	Form interface {
-		Slug() string
+	PublicationsProvider interface {
+		PublicationsOf(l string) ([]*Publication, error)
 	}
 )
 
-func (v *Value) Deliver(form Form, asource AuthorSource, psource PublicationsSource, destination Destination) {
-	slug := form.Slug()
-	author := asource.BySlug(slug)
-	publications := psource.GetListByAuthorSlug(slug)
-	destination.Deliver(&Deliverable{
-		Author:       author,
-		Publications: publications,
-	})
+func New(l *log.Logger, ap AuthorProvider, pp PublicationsProvider, login string) *Value {
+	return &Value{
+		logger:               l,
+		authorProvider:       ap,
+		publicationsProvider: pp,
+		login:                login,
+	}
+}
+
+func (v *Value) Publications() []*Publication {
+	publications, err := v.publicationsProvider.PublicationsOf(v.login)
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return publications
+}
+
+func (v *Value) Author() *Author {
+	author, err := v.authorProvider.AuthorByLogin(v.login)
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return author
 }

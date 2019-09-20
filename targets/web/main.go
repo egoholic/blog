@@ -9,6 +9,7 @@ import (
 	"time"
 
 	blogPreviewing "github.com/egoholic/blog/blog/previewing/handler/http"
+	authorPreviewing "github.com/egoholic/blog/author/previewing/handler/http"
 	publicationReading "github.com/egoholic/blog/publication/reading/handler/http"
 
 	. "github.com/egoholic/blog/config"
@@ -27,10 +28,11 @@ var (
 	err     error
 )
 
-type publicationSlugForm struct{}
+type SingleStringParamURLForm struct{}
 
-func (f *publicationSlugForm) CheckAndPopulate(pattern string, chunk string, prms *params.Params) bool {
+func (f *SingleStringParamURLForm) CheckAndPopulate(pattern string, chunk string, prms *params.Params) bool {
 	prms.Set(pattern, chunk)
+	logger.Printf("\n\nFORM |> pattern: %s | chunk: %s\n\n", pattern, chunk)
 	return true
 }
 
@@ -54,10 +56,13 @@ func main() {
 	root := router.Root()
 	root.GET(prepare(blogPreviewing.New), "presents recent and popular publications")
 	publications := root.Child("p", &node.DumbForm{})
-	publication := publications.Child(":slug", &publicationSlugForm{})
-	publication.GET(prepare(publicationReading.New), "presents selected publications")
+	publications.Child(":slug", &SingleStringParamURLForm{}).GET(prepare(publicationReading.New), "presents selected publications")
+	authors := root.Child("a", &node.DumbForm{})
+	authors.Child(":login", &SingleStringParamURLForm{}).GET(prepare(authorPreviewing.New), "presents authors's bio and previews for  his/her publications")
+
 	logger.Println("server listens :3000 port")
 	logger.Fatal(http.ListenAndServe(":3000", router))
+
 }
 
 func prepare(hb HandlerFnBuilder) handler.HandlerFn {

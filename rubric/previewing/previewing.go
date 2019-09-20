@@ -1,5 +1,7 @@
 package previewing
 
+import "log"
+
 type (
 	Rubric struct {
 		Slug        string
@@ -7,35 +9,46 @@ type (
 		Description string
 	}
 	Publication struct {
-		Slug    string
-		Title   string
-		Content string
+		Slug       string
+		Title      string
+		CreatedAt  string
+		Popularity string
 	}
-	Value        struct{}
-	RubricSource interface {
-		BySlug(string) *Rubric
+	Value struct {
+		logger               *log.Logger
+		rubricProvider       RubricProvider
+		publicationsProvider PublicationsProvider
+		slug                 string
 	}
-	PublicationsSource interface {
-		ByRubricSlug(string) []*Publication
+	RubricProvider interface {
+		RubricBySlug(string) (*Rubric, error)
 	}
-	Deliverable struct {
-		Rubric       *Rubric
-		Publications []*Publication
-	}
-	Destination interface {
-		Deliver(*Deliverable) error
-	}
-	Form interface {
-		Slug() string
+	PublicationsProvider interface {
+		PublicationsOf(string) ([]*Publication, error)
 	}
 )
 
-func (v *Value) Deliver(form Form, rsource RubricSource, psource PublicationsSource, destination Destination) {
-	slug := form.Slug()
-	rubric := rsource.BySlug(slug)
-	publications := psource.ByRubricSlug(slug)
-	destination.Deliver(&Deliverable{
-		Rubric:       rubric,
-		Publications: publications,
-	})
+func New(l *log.Logger, rp RubricProvider, pp PublicationsProvider, slug string) *Value {
+	return &Value{
+		logger:               l,
+		rubricProvider:       rp,
+		publicationsProvider: pp,
+		slug:                 slug,
+	}
+}
+
+func (v *Value) Rubric() *Rubric {
+	rubric, err := v.rubricProvider.RubricBySlug(v.slug)
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return rubric
+}
+
+func (v *Value) Publications() []*Publication {
+	publications, err := v.publicationsProvider.PublicationsOf(v.slug)
+	if err != nil {
+		v.logger.Printf("ERROR: %s\n", err.Error())
+	}
+	return publications
 }

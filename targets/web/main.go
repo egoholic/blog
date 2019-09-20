@@ -8,9 +8,10 @@ import (
 	"os"
 	"time"
 
-	blogPreviewing "github.com/egoholic/blog/blog/previewing/handler/http"
 	authorPreviewing "github.com/egoholic/blog/author/previewing/handler/http"
+	blogPreviewing "github.com/egoholic/blog/blog/previewing/handler/http"
 	publicationReading "github.com/egoholic/blog/publication/reading/handler/http"
+	rubricPreviewing "github.com/egoholic/blog/rubric/previewing/handler/http"
 
 	. "github.com/egoholic/blog/config"
 	rtr "github.com/egoholic/router"
@@ -54,11 +55,17 @@ func main() {
 
 	router := rtr.New()
 	root := router.Root()
+	// blog
 	root.GET(prepare(blogPreviewing.New), "presents recent and popular publications")
+	// publications
 	publications := root.Child("p", &node.DumbForm{})
 	publications.Child(":slug", &SingleStringParamURLForm{}).GET(prepare(publicationReading.New), "presents selected publications")
+	// authors
 	authors := root.Child("a", &node.DumbForm{})
 	authors.Child(":login", &SingleStringParamURLForm{}).GET(prepare(authorPreviewing.New), "presents authors's bio and previews for  his/her publications")
+	// rubrics
+	rubrics := root.Child("r", &node.DumbForm{})
+	rubrics.Child(":slug", &SingleStringParamURLForm{}).GET(prepare(rubricPreviewing.New), "presents rubrics and related publications")
 
 	logger.Println("server listens :3000 port")
 	logger.Fatal(http.ListenAndServe(":3000", router))

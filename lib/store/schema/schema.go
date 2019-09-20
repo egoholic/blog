@@ -38,22 +38,8 @@ func Apply() (err error) {
 	if err != nil {
 		return
 	}
-	query := `CREATE TABLE publications (
-		  slug             varchar(255) PRIMARY KEY,
-			meta_keywords    text NOT NULL,
-	    meta_description text NOT NULL,
-	    title            varchar(255) NOT NULL,
-	    content          text NOT NULL,
-			created_at       timestamp NOT NULL,
-			popularity       int NOT NULL DEFAULT 0
-		);`
-	_, err = db.Exec(query)
-	if err != nil {
-		return
-	}
-	fmt.Println("-- table `publications` has been created")
 
-	query = `CREATE TABLE rubrics (
+	query := `CREATE TABLE rubrics (
 		  slug             varchar(255) PRIMARY KEY,
 			meta_keywords    text NOT NULL,
 	    meta_description text NOT NULL,
@@ -65,6 +51,29 @@ func Apply() (err error) {
 		return
 	}
 	fmt.Println("-- table `rubrics` has been created")
+
+	query = `CREATE TABLE publications (
+		  slug             varchar(255) PRIMARY KEY,
+			meta_keywords    text NOT NULL,
+	    meta_description text NOT NULL,
+	    title            varchar(255) NOT NULL,
+	    content          text NOT NULL,
+			created_at       timestamp NOT NULL,
+			rubric_slug      varchar(255) NOT NULL REFERENCES rubrics(slug),
+			popularity       int NOT NULL DEFAULT 0
+		);`
+	_, err = db.Exec(query)
+	if err != nil {
+		return
+	}
+	fmt.Println("-- table `publications` has been created")
+
+	query = `CREATE INDEX publications_rubric_idx ON publications(rubric_slug);`
+	_, err = db.Exec(query)
+	if err != nil {
+		return
+	}
+	fmt.Println("-- index `publications.rubric_slug` has been created")
 
 	query = `CREATE TABLE accounts (
 			login      varchar(255) PRIMARY KEY,
@@ -81,13 +90,14 @@ func Apply() (err error) {
 	query = `CREATE TABLE publication_authors (
 			publication_slug  varchar(255) NOT NULL REFERENCES publications(slug),
 			author_login      varchar(255) NOT NULL REFERENCES accounts(login),
+
 			PRIMARY KEY (publication_slug, author_login)
-		);`
+ 		);`
 	_, err = db.Exec(query)
 	if err != nil {
 		return
 	}
-	fmt.Println("-- table `accounts` has been created")
+	fmt.Println("-- table `publication_authors` has been created")
 
 	query = `CREATE INDEX publication_author_login_idx ON publication_authors(author_login);`
 	_, err = db.Exec(query)

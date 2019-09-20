@@ -43,8 +43,10 @@ func Many(ntimes int, db *sql.DB, factory func(*sql.DB) (sql.Result, error)) (re
 }
 func CreatePublication(db *sql.DB) (result sql.Result, err error) {
 	pid := __LAST_ID["publications"]
-	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              popularity,  created_at) VALUES
-																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', 1,           CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day');`, pid, pid, pid, pid, pid, pid)
+	rn := rand.Intn(__LAST_ID["rubrics"])
+
+	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              popularity,  created_at,                                             rubric_slug) VALUES
+																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', 1,           CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day', '%dth');`, pid, pid, pid, pid, pid, pid, rn)
 	__LAST_ID["publications"]++
 	return db.Exec(query)
 }
@@ -95,18 +97,20 @@ func Seed() (err error) {
 		fmt.Printf("Error: %s\n", err.Error())
 		return
 	}
-	_, err = Many(publicationsNumber, db, CreatePublication)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return
-	}
-	fmt.Printf("-- %d publications created!\n", publicationsNumber)
+
 	_, err = Many(rubricsNumber, db, CreateRubric)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		return
 	}
 	fmt.Printf("-- %d rubrics created!\n", rubricsNumber)
+
+	_, err = Many(publicationsNumber, db, CreatePublication)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+	fmt.Printf("-- %d publications created!\n", publicationsNumber)
 
 	_, err = Many(accountsNumber, db, CreateAccount)
 	if err != nil {

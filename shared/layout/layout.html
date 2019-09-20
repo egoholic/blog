@@ -12,10 +12,7 @@ header {
   border-bottom: 1px solid #aaa;
   box-shadow: 1px 0 5px #ccc;
   margin-bottom: 10px;
-}
-header > h1 {
-  margin: 0;
-  padding: 20px;
+  overflow: hidden;
 }
 .publication {
   width: 960px;
@@ -64,11 +61,44 @@ footer {
   clear: both;
   color: #fafafa;
 }
+
+#header-nav {
+  float: left;
+}
+#header-nav-list {
+  margin: 0 0 40px;
+  list-style-type: none;
+}
+
+.header-nav-item {
+  float: left;
+}
+
+.header-nav-item>a {
+  display: block;
+  padding: 2em 2em;
+}
+.header-nav-item>a:hover{
+  background: #aaccee;
+}
+#blog-title {
+  margin: 0;
+  padding: 20px;
+  float: left;
+}
     </style>
   </head>
   <body>
     <header>
-      <h1>BLOG</h1>
+      <h1 id="blog-title"><a href="/">BLOG</a></h1>
+      <nav id="header-nav">
+      <ul id="header-nav-list">
+        <li class="header-nav-item"><a href="">Home</a></li>
+        <li class="header-nav-item"><a href="">Timeline</a></li>
+        <li class="header-nav-item"><a href="">About Us</a></li>
+        <li class="header-nav-item"><a href="">Contacts</a></li>
+      </ul>
+      </nav>
     </header>
     {{template "content" .}}
     <footer>

@@ -15,4 +15,4 @@
 
 ```$ go run targets/web/main.go```
 
-It uses :8080 port.
+It uses :3000 port.

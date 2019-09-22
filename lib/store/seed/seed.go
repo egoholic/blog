@@ -317,8 +317,6 @@ func InsertList(tuples []*Tuple) (err error) {
 	}
 	values = strings.Join(manyValues, ", ")
 	q := fmt.Sprintf("INSERT INTO %s %s VALUES %s;", tableName, header, values)
-	fmt.Printf("Query: %q\n", q)
-	fmt.Printf("\n\n\n\t\t\tDB:  %#v\n\n\n", DB)
 	_, err = DB.Exec(q)
 	return err
 }
@@ -326,7 +324,6 @@ func InsertList(tuples []*Tuple) (err error) {
 func Truncate(tableNames ...string) (err error) {
 	for _, tn := range tableNames {
 		q := fmt.Sprintf("TRUNCATE TABLE %s CONTINUE IDENTITY CASCADE;", tn)
-		fmt.Printf("Query: %s\n", q)
 		_, err = DB.Exec(q)
 		if err != nil {
 			return
@@ -404,7 +401,6 @@ func Seed() {
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 	}
-	fmt.Printf("\n\n\t\t\tPUBLICATIONS CREATED!!!\n\n\n")
 	acc := []*Tuple{}
 	fields := map[string]string{}
 	for _, s := range publicationSlugs {

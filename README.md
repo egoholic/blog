@@ -6,7 +6,6 @@
 
 ```$ go run targets/migrator/main.go```
 
-
 ### How to seed DB?
 
 ```$ go run targets/seed/main.go```

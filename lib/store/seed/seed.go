@@ -5,125 +5,414 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"time"
 
-	. "github.com/egoholic/blog/config"
 	_ "github.com/lib/pq"
 )
 
+type Tuple struct {
+	Fields    map[string]string
+	TableName string
+}
+
+func FieldsFor(tn string) []string {
+	switch tn {
+	case "accounts":
+		return AccountFieldNames
+	case "rubrics":
+		return RubricFieldNames
+	case "publications":
+		return PublicationFieldNames
+	case "publication_authors":
+		return PublicationAuthorFieldNames
+	}
+	return []string{}
+}
+
 var (
-	__LAST_ID = map[string]int{}
+	DB               *sql.DB
+	Random           *rand.Rand
+	logins           []string
+	rubricSlugs      []string
+	publicationSlugs []string
+
+	AccountFieldNames           = []string{"login", "first_name", "last_name", "bio"}
+	RubricFieldNames            = []string{"slug", "meta_keywords", "meta_description", "title", "description"}
+	PublicationFieldNames       = []string{"slug", "meta_keywords", "meta_description", "title", "content", "created_at", "rubric_slug", "popularity"}
+	PublicationAuthorFieldNames = []string{"publication_slug", "author_login"}
+	Sentences                   = []string{
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+		"Dolor sed viverra ipsum nunc aliquet bibendum enim.",
+		"In massa tempor nec feugiat.",
+		"Nunc aliquet bibendum enim facilisis gravida.",
+		"Nisl nunc mi ipsum faucibus vitae aliquet nec ullamcorper.",
+		"Amet luctus venenatis lectus magna fringilla.",
+		"Volutpat maecenas volutpat blandit aliquam etiam erat velit scelerisque in.",
+		"Egestas egestas fringilla phasellus faucibus scelerisque eleifend.",
+		"Sagittis orci a scelerisque purus semper eget duis.",
+		"Nulla pharetra diam sit amet nisl suscipit.",
+		"Sed adipiscing diam donec adipiscing tristique risus nec feugiat in.",
+		"Fusce ut placerat orci nulla.",
+		"Pharetra vel turpis nunc eget lorem dolor.",
+		"Tristique senectus et netus et malesuada.",
+		"Etiam tempor orci eu lobortis elementum nibh tellus molestie.",
+		"Neque egestas congue quisque egestas.",
+		"Egestas integer eget aliquet nibh praesent tristique.",
+		"Vulputate mi sit amet mauris.",
+		"Sodales neque sodales ut etiam sit.",
+		"Dignissim suspendisse in est ante in.",
+		"Volutpat commodo sed egestas egestas.",
+		"Felis donec et odio pellentesque diam.",
+		"Pharetra vel turpis nunc eget lorem dolor sed viverra.",
+		"Porta nibh venenatis cras sed felis eget.",
+		"Aliquam ultrices sagittis orci a.",
+		"Dignissim diam quis enim lobortis.",
+		"Aliquet porttitor lacus luctus accumsan.",
+		"Dignissim convallis aenean et tortor at risus viverra adipiscing at.",
+	}
 )
 
 func init() {
-	__LAST_ID["publications"] = 0
-	__LAST_ID["rubrics"] = 0
-	__LAST_ID["accounts"] = 0
+	logins = []string{}
+	rubricSlugs = []string{}
+	publicationSlugs = []string{}
+	Random = rand.New(rand.NewSource(time.Now().Unix()))
 }
 
-func Truncate(db *sql.DB, names ...string) (err error) {
-	for _, name := range names {
-		_, err = db.Exec(fmt.Sprintf("TRUNCATE %s RESTART IDENTITY;", name))
-		if err != nil {
-			return
-		}
-		__LAST_ID[name] = 0
-	}
-	return
-}
-func Many(ntimes int, db *sql.DB, factory func(*sql.DB) (sql.Result, error)) (results []sql.Result, err error) {
-	var result sql.Result
-	for i := 0; i < ntimes; i++ {
-		result, err = factory(db)
-		if err != nil {
-			return
-		}
-		results = append(results, result)
-	}
-	return
-}
-func CreatePublication(db *sql.DB) (result sql.Result, err error) {
-	pid := __LAST_ID["publications"]
-	rn := rand.Intn(__LAST_ID["rubrics"])
-
-	query := fmt.Sprintf(`INSERT INTO publications (slug,             meta_keywords,     meta_description,   title,              content,              popularity,  created_at,                                             rubric_slug) VALUES
-																		             ('publication-%d', 'publication, %d', '%dth publication', '%dth PUBLICATION', 'My %d publication.', 1,           CURRENT_DATE + INTERVAL '%d day' - INTERVAL '1000 day', '%dth');`, pid, pid, pid, pid, pid, pid, rn)
-	__LAST_ID["publications"]++
-	return db.Exec(query)
-}
-func CreateRubric(db *sql.DB) (result sql.Result, err error) {
-	rid := __LAST_ID["rubrics"]
-	query := fmt.Sprintf(`INSERT INTO rubrics (slug,   meta_keywords, meta_description, title,  description) VALUES
-															              ('%dth', 'rubric, %d',  '%d Rubric',      '%dTH', 'My %dth rubric.');`, rid, rid, rid, rid, rid)
-	__LAST_ID["rubrics"]++
-	return db.Exec(query)
-}
-func CreateAccount(db *sql.DB) (result sql.Result, err error) {
-	rid := __LAST_ID["accounts"]
-	query := fmt.Sprintf(`INSERT INTO accounts (login,          first_name,     last_name,     bio) VALUES
-															               ('account-%dth', 'Firstname-%d', 'Lastname-%d', 'I am %dth user.');`, rid, rid, rid, rid)
-	__LAST_ID["accounts"]++
-	return db.Exec(query)
-}
-
-func CreatePublicationAuthors(db *sql.DB) (result sql.Result, err error) {
-	var sb strings.Builder
-	sb.WriteString("INSERT INTO publication_authors (publication_slug, author_login) VALUES ")
-	subs := []string{}
-	for pi := 0; pi < __LAST_ID["publications"]; pi++ {
-		for ui := 0; ui < rand.Intn(__LAST_ID["accounts"])+1; ui++ {
-			subs = append(subs, (fmt.Sprintf(`('publication-%d', 'account-%dth')`, pi, ui)))
+func has(collection []string, v string) bool {
+	for _, elem := range collection {
+		if elem == v {
+			return true
 		}
 	}
-	sb.WriteString(strings.Join(subs, ",\n"))
-	sb.WriteRune(';')
-	query := sb.String()
-	return db.Exec(query)
+	return false
 }
 
-func Seed() (err error) {
+var firstNames = []string{"Aaron", "Robert", "Rob", "Richard", "Rich", "Rick", "Dirk", "Kirk", "Thomas", "Derek", "Samuel", "Sam", "Sammy", "Kennet", "Peter", "Rodger", "Rodrigo", "Ivan", "Mark", "Kventin", "Oleg", "Andrey", "Sergey", "Vladimir", "Volodymyr", "Voldemar", "Ulrih", "Rodrigo", "Esteban", "Gielermo", "Francis", "Frank", "Kristoph", "Ann", "Caren", "Julia", "Anastatia", "Margaret", "Sally", "John", "Joanna"}
+
+func CreatedAt() string {
+	t := time.Now()
+	y, m, d := t.Date()
+	h := t.Hour()
+	M := t.Minute()
+	s := t.Second()
+	return fmt.Sprintf("%d-%d-%d %d:%d:%d", y, m, d, h, M, s)
+}
+
+func Sentence() string {
+	return Sentences[Random.Intn(len(Sentences)-1)]
+}
+func Paragraph() string {
 	var (
-		publicationsNumber = 20
-		rubricsNumber      = 5
-		accountsNumber     = 5
+		sb strings.Builder
+		n  = Random.Intn(6)
 	)
-	connStr, err := Config.DBCredentials().ConnectionString()
-	if err != nil {
-		return
+	for i := 0; i < n-1; i++ {
+		sb.WriteString(Sentence())
+		sb.WriteRune(' ')
 	}
-	db, err := sql.Open("postgres", connStr)
-	defer db.Close()
+	sb.WriteString(Sentence())
 
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return
+	return sb.String()
+}
+func Paragraphs(n int) string {
+	var sb strings.Builder
+	for i := 0; i < n-1; i++ {
+		sb.WriteString(Paragraph())
+		sb.WriteRune('\n')
 	}
+	sb.WriteString(Paragraph())
+	return sb.String()
+}
 
-	_, err = Many(rubricsNumber, db, CreateRubric)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return
-	}
-	fmt.Printf("-- %d rubrics created!\n", rubricsNumber)
+func FirstName() string {
+	return firstNames[Random.Intn(len(firstNames)-1)]
+}
 
-	_, err = Many(publicationsNumber, db, CreatePublication)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return
-	}
-	fmt.Printf("-- %d publications created!\n", publicationsNumber)
+var lastNames = []string{"Peterson", "Johnson", "Falcon", "Black", "White", "Brown", "Silver", "Gold", "Golt", "Colt", "Kaas", "Ivanov", "Sidorov", "Petrov", "Vernidub", "Melnik", "Melnyk", "Melnychenko", "Marchanko", "Petrenko", "Shevchenko", "Washindton", "Miller"}
 
-	_, err = Many(accountsNumber, db, CreateAccount)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return
-	}
-	fmt.Printf("-- %d accounts created!\n", accountsNumber)
+func LastName() string {
+	return lastNames[Random.Intn(len(lastNames)-1)]
+}
 
-	_, err = CreatePublicationAuthors(db)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		return
+func LoginFor(firstName, lastName string) string {
+	login := strings.ToLower(fmt.Sprintf("%s.%s-%d", firstName, lastName, len(logins)))
+	logins = append(logins, login)
+	return login
+}
+
+func Login() string {
+	return logins[Random.Intn(len(logins)-1)]
+}
+
+func Bio() string {
+	return Paragraphs(1 + Random.Intn(2))
+}
+
+var publicationTitles = []string{"How to write great articles", "Best practices for content marketing", "10 secrets of attraction", "Introcuction to Content Marketing", "How to avoid problems", "Business drivers", "The art of focusing", "Content Marketing trends", "Top blogers' secrets", "How to Sell", "How to improve relations with your clients", "Blogging Templates", "Great Story"}
+
+func PublicationTitle() string {
+	return publicationTitles[Random.Intn(len(publicationTitles)-1)]
+}
+func PublicationContent() string {
+	return Paragraphs(5 + Random.Intn(5))
+}
+func Popularity() string {
+	return fmt.Sprintf("%d", Random.Intn(100000))
+}
+
+var rubricTitles = []string{"HowTos", "Interviews", "Feature Releases", "Best Practices", "Retrospectivas", "Opinions", "Reports"}
+
+func RubricTitle() string {
+	return rubricTitles[Random.Intn(len(rubricTitles)-1)]
+}
+
+func RubricDescription() string {
+	return Paragraphs(1 + Random.Intn(2))
+}
+
+func slug(s string, n int) string {
+	s = strings.ReplaceAll(s, " ", "-")
+	s = strings.ReplaceAll(s, "'", "-")
+	s = strings.ReplaceAll(s, "_", "-")
+	s = strings.ReplaceAll(s, "/", "-or-")
+	s = strings.ReplaceAll(s, "&", "-and-")
+	s = strings.ReplaceAll(s, "?", "")
+	s = strings.ReplaceAll(s, "=", "-is-")
+	s = strings.ReplaceAll(s, "\"", "-")
+	return fmt.Sprintf("%s-%d", strings.ToLower(s), n)
+}
+
+func PublicationSlugFor(t string) string {
+	s := slug(t, len(publicationSlugs))
+	publicationSlugs = append(publicationSlugs, s)
+	return s
+}
+
+func PublicationSlug() string {
+	return publicationSlugs[Random.Intn(len(publicationSlugs)-1)]
+}
+
+func RubricSlugFor(t string) string {
+	s := slug(t, len(rubricSlugs))
+	rubricSlugs = append(rubricSlugs, s)
+	return s
+}
+
+func RubricSlug() string {
+	return rubricSlugs[Random.Intn(len(rubricSlugs)-1)]
+}
+
+var keywords = []string{"content", "marketing", "blogging", "best-practices", "business", "company", "product", "secret", "sale", "recommendation", "idea"}
+
+func MetaKeywords() string {
+	acc := []string{}
+	l := len(keywords)
+	for i := 0; i < 3; i++ {
+		acc = append(acc, keywords[Random.Intn(l-1)])
 	}
-	fmt.Println("-- publications are linked to authots!")
+	return strings.Join(acc, ", ")
+}
+
+func MetaDescription() string {
+	return Sentence()
+}
+
+func NewAccount(fields map[string]string) (*Tuple, error) {
+	if _, ok := fields["first_name"]; !ok {
+		fields["first_name"] = FirstName()
+	}
+	if _, ok := fields["last_name"]; !ok {
+		fields["last_name"] = LastName()
+	}
+	if _, ok := fields["login"]; !ok {
+		fields["login"] = LoginFor(fields["first_name"], fields["last_name"])
+	}
+	if _, ok := fields["bio"]; !ok {
+		fields["bio"] = Bio()
+	}
+	return new("accounts", fields)
+}
+
+func NewRubric(fields map[string]string) (*Tuple, error) {
+	if _, ok := fields["title"]; !ok {
+		fields["title"] = RubricTitle()
+	}
+	// should be after title assignment
+	if _, ok := fields["slug"]; !ok {
+		fields["slug"] = RubricSlugFor(fields["title"])
+	}
+	if _, ok := fields["meta_keywords"]; !ok {
+		fields["meta_keywords"] = MetaKeywords()
+	}
+	if _, ok := fields["meta_description"]; !ok {
+		fields["meta_description"] = MetaDescription()
+	}
+	if _, ok := fields["description"]; !ok {
+		fields["description"] = RubricDescription()
+	}
+	return new("rubrics", fields)
+}
+
+func NewPublication(fields map[string]string) (*Tuple, error) {
+	if _, ok := fields["title"]; !ok {
+		fields["title"] = PublicationTitle()
+	}
+	// should be after title assignment
+	if _, ok := fields["slug"]; !ok {
+		fields["slug"] = PublicationSlugFor(fields["title"])
+	}
+	if _, ok := fields["meta_keywords"]; !ok {
+		fields["meta_keywords"] = MetaKeywords()
+	}
+	if _, ok := fields["meta_description"]; !ok {
+		fields["meta_description"] = MetaDescription()
+	}
+	if _, ok := fields["content"]; !ok {
+		fields["content"] = PublicationContent()
+	}
+	if _, ok := fields["created_at"]; !ok {
+		fields["created_at"] = CreatedAt()
+	}
+	if _, ok := fields["rubric_slug"]; !ok {
+		fields["rubric_slug"] = RubricSlug()
+	}
+	if _, ok := fields["popularity"]; !ok {
+		fields["popularity"] = Popularity()
+	}
+	return new("publications", fields)
+}
+
+func NewPublicationAuthor(fields map[string]string) (*Tuple, error) {
+	if _, ok := fields["publication_slug"]; !ok {
+		fields["publication_slug"] = PublicationSlug()
+	}
+	if _, ok := fields["author_login"]; !ok {
+		fields["author_login"] = Login()
+	}
+	return new("publication_authors", fields)
+}
+
+func Insert(t *Tuple) (err error) {
+	header, tuple := tupleHeaderAndValues(FieldsFor(t.TableName), t.Fields)
+	_, err = DB.Exec(fmt.Sprintf("INSERT INTO %s %s VALUES %s;", t.TableName, header, tuple))
+	return err
+}
+
+func InsertMany(tuples ...*Tuple) (err error) {
+	return InsertList(tuples)
+}
+
+func InsertList(tuples []*Tuple) (err error) {
+	var (
+		tableName  string
+		header     string
+		values     string
+		manyValues = []string{}
+	)
+	for _, t := range tuples {
+		tableName = t.TableName
+		header, values = tupleHeaderAndValues(FieldsFor(t.TableName), t.Fields)
+		manyValues = append(manyValues, values)
+	}
+	values = strings.Join(manyValues, ", ")
+	q := fmt.Sprintf("INSERT INTO %s %s VALUES %s;", tableName, header, values)
+	fmt.Printf("Query: %q\n", q)
+	fmt.Printf("\n\n\n\t\t\tDB:  %#v\n\n\n", DB)
+	_, err = DB.Exec(q)
+	return err
+}
+
+func Truncate(tableNames ...string) (err error) {
+	for _, tn := range tableNames {
+		q := fmt.Sprintf("TRUNCATE TABLE %s CONTINUE IDENTITY CASCADE;", tn)
+		fmt.Printf("Query: %s\n", q)
+		_, err = DB.Exec(q)
+		if err != nil {
+			return
+		}
+	}
 	return
+}
+
+func new(tableName string, fields map[string]string) (*Tuple, error) {
+	fieldNames := FieldsFor(tableName)
+	result := map[string]string{}
+	for fname, fval := range fields {
+		if has(fieldNames, fname) {
+			result[fname] = fval
+		} else {
+			return &Tuple{
+				TableName: tableName,
+				Fields:    result,
+			}, fmt.Errorf("wrong field name: `%s` for `%s` table\n\texpected any of: `%s`", fname, tableName, strings.Join(fieldNames, ", "))
+		}
+	}
+	return &Tuple{
+		TableName: tableName,
+		Fields:    result,
+	}, nil
+}
+
+func headerAndLiteral(values []string) string {
+	var (
+		sb strings.Builder
+		ln = len(values)
+	)
+	sb.WriteRune('(')
+	for _, value := range values[:ln-1] {
+		sb.WriteString(fmt.Sprintf("'%s',", value))
+	}
+	sb.WriteString(fmt.Sprintf("'%s'", values[ln-1]))
+	sb.WriteRune(')')
+	return sb.String()
+}
+
+func tupleHeaderAndValues(fieldNames []string, fields map[string]string) (string, string) {
+	var (
+		l      = len(fields)
+		names  = make([]string, l)
+		values = make([]string, l)
+	)
+	for i, name := range fieldNames {
+		names[i] = name
+		values[i] = fmt.Sprintf("'%s'", strings.ReplaceAll(fields[name], "'", string('\'')))
+	}
+
+	return fmt.Sprintf("(%s)", strings.Join(names, ", ")),
+		fmt.Sprintf("(%s)", strings.Join(values, ", "))
+}
+
+func Must(t *Tuple, err error) *Tuple {
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
+func Seed() {
+	Truncate("accounts", "rubrics", "publications", "publication_authors")
+	err := InsertMany(Must(NewAccount(map[string]string{})), Must(NewAccount(map[string]string{})), Must(NewAccount(map[string]string{})))
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+	}
+	err = InsertMany(Must(NewRubric(map[string]string{})), Must(NewRubric(map[string]string{})), Must(NewRubric(map[string]string{})), Must(NewRubric(map[string]string{})))
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+	}
+	err = InsertMany(Must(NewPublication(map[string]string{})), Must(NewPublication(map[string]string{})), Must(NewPublication(map[string]string{})), Must(NewPublication(map[string]string{})))
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+	}
+	fmt.Printf("\n\n\t\t\tPUBLICATIONS CREATED!!!\n\n\n")
+	acc := []*Tuple{}
+	fields := map[string]string{}
+	for _, s := range publicationSlugs {
+
+		fields["publication_slug"] = s
+		fields["author_login"] = logins[Random.Intn(len(logins))]
+		acc = append(acc, Must(NewPublicationAuthor(fields)))
+
+	}
+	InsertList(acc)
 }

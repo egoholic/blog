@@ -58,7 +58,7 @@ func Apply() (err error) {
 	    meta_description text NOT NULL,
 	    title            varchar(255) NOT NULL,
 	    content          text NOT NULL,
-			created_at       timestamp NOT NULL,
+			created_at       timestamp without time zone NOT NULL,
 			rubric_slug      varchar(255) NOT NULL REFERENCES rubrics(slug),
 			popularity       int NOT NULL DEFAULT 0
 		);`

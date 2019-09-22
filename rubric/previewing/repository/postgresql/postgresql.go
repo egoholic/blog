@@ -15,29 +15,6 @@ type Repository struct {
 	logger *log.Logger
 }
 
-var (
-	rubricQuery = `SELECT slug,
-												title,
-												description
-								 FROM rubrics
-								 WHERE slug = $1
-								 LIMIT 1;`
-
-	publicationsQuery = `SELECT slug,
-															title,
-															created_at,
-															popularity
-											 FROM (
-												 SELECT slug,
-															  title,
-														  	created_at,
-															  popularity,
-															  rubric_slug
-											     FROM publications
-													 WHERE rubric_slug = $1
-											 ) AS selected;`
-)
-
 func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
 	return &Repository{
 		ctx:    ctx,
@@ -46,12 +23,31 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
 	}
 }
 
+var rubricQuery = `SELECT slug,
+											  	title,
+												  description
+								   FROM rubrics
+								   WHERE slug = $1
+								   LIMIT 1;`
+
 func (r *Repository) RubricBySlug(s string) (*previewing.Rubric, error) {
 	var rubric previewing.Rubric
 	row := r.db.QueryRowContext(r.ctx, rubricQuery, s)
 	err := row.Scan(&rubric.Slug, &rubric.Title, &rubric.Description)
 	return &rubric, err
 }
+
+var publicationsQuery = `SELECT slug,
+															  title,
+															  created_at,
+															  popularity
+											   FROM (SELECT slug,
+															        title,
+														  	      created_at,
+															        popularity,
+															        rubric_slug
+											         FROM publications
+													     WHERE rubric_slug = $1) AS selected;`
 
 func (r *Repository) PublicationsOf(s string) (publications []*previewing.Publication, err error) {
 	rows, err := r.db.QueryContext(r.ctx, publicationsQuery, s)

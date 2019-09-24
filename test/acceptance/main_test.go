@@ -10,17 +10,18 @@ import (
 	"github.com/DATA-DOG/godog"
 	"github.com/DATA-DOG/godog/colors"
 	"github.com/sclevine/agouti"
-	. "github.com/sclevine/agouti/matchers"
+	//. "github.com/sclevine/agouti/matchers"
 )
 
 var (
+	logger  = log.New(os.Stdout, "-> ", 0)
 	page    *agouti.Page
 	err     error
 	command = []string{"java", "-jar", "selenium-server.jar", "-port", ""}
-	driver  = agouti.NewWebDriver("http://localhost:8080", command)
+	driver  = agouti.ChromeDriver()
 	opt     = godog.Options{
 		Output: colors.Colored(os.Stdout),
-		Format: "progress", // can define default values
+		Format: "cucumber", // can define default values
 	}
 	cmd = exec.Command("go", "run", "../../../targets/web/main.go")
 )
@@ -44,32 +45,40 @@ func TestMain(m *testing.M) {
 }
 
 func blogHasPublications() error {
-	// return godog.ErrPending
-	return nil
+	return godog.ErrPending
 }
 
 func iVisitHomePage() error {
-	// return godog.ErrPending
-	return nil
+	return godog.ErrPending
 }
 
 func iSeeRecentPublications(arg1 int) error {
-	// return godog.ErrPending
-	return nil
+	return godog.ErrPending
 }
 
 func iSeeMostPopularPublications(arg1 int) error {
-	// return godog.ErrPending
-	return nil
+	return godog.ErrPending
 }
 
 func FeatureContext(s *godog.Suite) {
 	s.BeforeScenario(func(interface{}) {
-		if err := cmd.Run(); err != nil {
-			log.Fatal(err)
+		if err := cmd.Start(); err != nil {
+			_, err2 := cmd.CombinedOutput()
+			logger.Fatalf("Error1: %s\n\tcmd: %s\n", err.Error(), err2.Error())
 		}
-		driver.Start()
+		logger.Println("ok1")
+		err = driver.Start()
+		if err != nil {
+			logger.Fatalf("Error2: %s\n", err.Error())
+		}
+		logger.Println("ok2")
+
 		page, err = driver.NewPage(agouti.Browser("firefox"))
+		if err != nil {
+			logger.Fatalf("Error3: %s\n", err.Error())
+		}
+		logger.Println("ok3")
+
 	})
 	s.AfterScenario(func(interface{}, error) {
 		driver.Stop()

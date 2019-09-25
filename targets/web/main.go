@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	authorPreviewing "github.com/egoholic/blog/author/previewing/handler/http"
@@ -41,16 +43,16 @@ func main() {
 	logger.Println("server starting...")
 	connStr, err = Config.DBCredentials().ConnectionString()
 	if err != nil {
-		logger.Fatalf("ERROR: %s\n", err.Error())
+		fmt.Printf("ERROR: %s\n", err.Error())
 	}
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		logger.Fatalf("ERROR: %s\n", err.Error())
+		fmt.Printf("ERROR: %s\n", err.Error())
 	}
 	defer db.Close()
 	err = db.Ping()
 	if err != nil {
-		logger.Fatalf("ERROR: %s\n", err.Error())
+		fmt.Printf("ERROR: %s\n", err.Error())
 	}
 
 	router := rtr.New()
@@ -66,6 +68,17 @@ func main() {
 	// rubrics
 	rubrics := root.Child("r", &node.DumbForm{})
 	rubrics.Child(":slug", &SingleStringParamURLForm{}).GET(prepare(rubricPreviewing.New), "presents rubrics and related publications")
+
+	pid := os.Getpid()
+	pidf, err := os.Create("blog-web.pid")
+	if err != nil {
+		fmt.Printf("FATALPID: %s   = %d\n", err.Error(), pid)
+	}
+	_, err = pidf.WriteString(strconv.Itoa(pid))
+	if err != nil {
+		fmt.Printf("FATALPID: %s   = %d\n", err.Error(), pid)
+	}
+	defer pidf.Close()
 
 	logger.Println("server listens :3000 port")
 	logger.Fatal(http.ListenAndServe(":3000", router))

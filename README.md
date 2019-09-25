@@ -15,3 +15,11 @@
 ```$ go run targets/web/main.go```
 
 It uses :3000 port.
+
+### How to run acceptance tests?
+
+We use godog (Cucumber for Golang) and Agouti for acceptance tests via GUI.
+
+You can run tests with:
+
+```$ godog --random```

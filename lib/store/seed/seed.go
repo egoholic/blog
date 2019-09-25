@@ -200,7 +200,11 @@ func RubricSlugFor(t string) string {
 }
 
 func RubricSlug() string {
-	return rubricSlugs[Random.Intn(len(rubricSlugs)-1)]
+	l := len(rubricSlugs)
+	if l == 0 {
+		return ""
+	}
+	return rubricSlugs[Random.Intn(l-1)]
 }
 
 var keywords = []string{"content", "marketing", "blogging", "best-practices", "business", "company", "product", "secret", "sale", "recommendation", "idea"}
@@ -222,15 +226,19 @@ func NewAccount(fields map[string]string) (*Tuple, error) {
 	if _, ok := fields["first_name"]; !ok {
 		fields["first_name"] = FirstName()
 	}
+	fields["first_name"] = clean(fields["first_name"])
 	if _, ok := fields["last_name"]; !ok {
 		fields["last_name"] = LastName()
 	}
+	fields["last_name"] = clean(fields["last_name"])
 	if _, ok := fields["login"]; !ok {
 		fields["login"] = LoginFor(fields["first_name"], fields["last_name"])
 	}
+	fields["login"] = clean(fields["login"])
 	if _, ok := fields["bio"]; !ok {
 		fields["bio"] = Bio()
 	}
+	fields["bio"] = clean(fields["bio"])
 	return new("accounts", fields)
 }
 
@@ -238,48 +246,65 @@ func NewRubric(fields map[string]string) (*Tuple, error) {
 	if _, ok := fields["title"]; !ok {
 		fields["title"] = RubricTitle()
 	}
+	fields["title"] = clean(fields["title"])
 	// should be after title assignment
 	if _, ok := fields["slug"]; !ok {
 		fields["slug"] = RubricSlugFor(fields["title"])
 	}
+	fields["slug"] = clean(fields["slug"])
 	if _, ok := fields["meta_keywords"]; !ok {
 		fields["meta_keywords"] = MetaKeywords()
 	}
+	fields["meta_keywords"] = clean(fields["meta_keywords"])
 	if _, ok := fields["meta_description"]; !ok {
 		fields["meta_description"] = MetaDescription()
 	}
+	fields["meta_description"] = clean(fields["meta_description"])
 	if _, ok := fields["description"]; !ok {
 		fields["description"] = RubricDescription()
 	}
+	fields["description"] = clean(fields["description"])
 	return new("rubrics", fields)
+}
+
+func clean(v string) string {
+	return strings.ReplaceAll(v, "'", `''`)
 }
 
 func NewPublication(fields map[string]string) (*Tuple, error) {
 	if _, ok := fields["title"]; !ok {
 		fields["title"] = PublicationTitle()
 	}
+	fields["title"] = clean(fields["title"])
 	// should be after title assignment
 	if _, ok := fields["slug"]; !ok {
 		fields["slug"] = PublicationSlugFor(fields["title"])
 	}
+	fields["slug"] = clean(fields["slug"])
 	if _, ok := fields["meta_keywords"]; !ok {
 		fields["meta_keywords"] = MetaKeywords()
 	}
+	fields["meta_keywords"] = clean(fields["meta_keywords"])
 	if _, ok := fields["meta_description"]; !ok {
 		fields["meta_description"] = MetaDescription()
 	}
+	fields["meta_description"] = clean(fields["meta_description"])
 	if _, ok := fields["content"]; !ok {
 		fields["content"] = PublicationContent()
 	}
+	fields["content"] = clean(fields["content"])
 	if _, ok := fields["created_at"]; !ok {
 		fields["created_at"] = CreatedAt()
 	}
+	fields["created_at"] = clean(fields["created_at"])
 	if _, ok := fields["rubric_slug"]; !ok {
 		fields["rubric_slug"] = RubricSlug()
 	}
+	fields["rubric_slug"] = clean(fields["rubric_slug"])
 	if _, ok := fields["popularity"]; !ok {
 		fields["popularity"] = Popularity()
 	}
+	fields["popularity"] = clean(fields["popularity"])
 	return new("publications", fields)
 }
 

@@ -4,7 +4,7 @@
     <h3>Recent Publications</h3>
     <ol>
     {{range .RecentPublications}}
-      <li class="micro-preview">
+      <li class="micro-preview bhv-recent-publication">
         <a href="/p/{{.Slug}}">{{.Title}}</a>
       </li>
     {{end}}
@@ -14,7 +14,7 @@
     <h3>Popular Publications</h3>
     <ol>
     {{range .PopularPublications}}
-      <li class="micro-preview">
+      <li class="micro-preview bhv-popular-publication">
         <a href="/p/{{.Slug}}">{{.Title}}</a>
       </li>
     {{end}}

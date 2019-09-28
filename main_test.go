@@ -33,12 +33,7 @@ var (
 
 func init() {
 	godog.BindFlags("godog.", flag.CommandLine, &opt)
-
-	connStr, err := Config.DBCredentials().ConnectionString()
-	if err != nil {
-		panic(err)
-	}
-	DB, err = sql.Open("postgres", connStr)
+	DB, err = sql.Open("postgres", DBConnectionString)
 	if err != nil {
 		panic(err)
 	}

@@ -8,32 +8,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func Apply() (err error) {
-	connStr, err := Config.DBCredentials().ConnectionStringWithoutDB()
+func Apply(db *sql.DB) (err error) {
+	_, err = db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s;", DBName))
 	if err != nil {
 		return
 	}
-	db, err := sql.Open("postgres", connStr)
-	defer db.Close()
+	fmt.Printf("-- database `%s` has been dropped\n", DBName)
+	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s;", DBName))
 	if err != nil {
 		return
 	}
-	_, err = db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s;", Config.DBCredentials().DBName))
-	if err != nil {
-		return
-	}
-	fmt.Printf("-- database `%s` has been dropped\n", Config.DBCredentials().DBName)
-	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s;", Config.DBCredentials().DBName))
-	if err != nil {
-		return
-	}
-	fmt.Printf("-- database `%s` has been created\n", Config.DBCredentials().DBName)
+	fmt.Printf("-- database `%s` has been created\n", DBName)
 
-	connStr, err = Config.DBCredentials().ConnectionString()
-	if err != nil {
-		return
-	}
-	db, err = sql.Open("postgres", connStr)
+	db, err = sql.Open("postgres", DBConnectionString)
 	defer db.Close()
 	if err != nil {
 		return

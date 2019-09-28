@@ -1,10 +1,10 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/egoholic/cfg"
 	_ "github.com/lib/pq"
 )
 
@@ -20,48 +20,68 @@ type DBCredentials struct {
 	DBName   string
 }
 
-var Config *Configuration
+var (
+	DBConnectionString          string
+	DBConnectionStringWithoutDB string
+
+	dbHost string
+	dbPort int
+	dbUser string
+	dbPwd  string
+	DBName string
+	config *cfg.Cfg
+	err    error
+)
 
 func init() {
-	Config = &Configuration{&DBCredentials{Host: "localhost", Port: 5432, User: "postgres", Password: "", DBName: "blog"}}
+	defaults := map[string]interface{}{}
+	defaults["dbhost"] = "localhost"
+	defaults["dbport"] = "5432"
+	defaults["dbuser"] = "postgres"
+	defaults["dbname"] = "stoa_blogging_development"
+	defaults["dbpwd"] = ""
+	config := cfg.Config(defaults)
+	dbHost, err = config.StringArg("DB Host name", "Database connection host name, like: 'localhost'.", "dbhost")
+	if err != nil {
+		panic(err)
+	}
+	dbPort, err = config.IntArg("DB port", "Database connection port, like: 5432.", "dbport")
+	if err != nil {
+		panic(err)
+	}
+	dbUser, err = config.StringArg("DB User", "Database connection user name, like: 'postgres'.", "dbuser")
+	if err != nil {
+		panic(err)
+	}
+	dbPwd, err = config.StringArg("DB Password", "Database connection password.", "dbpwd")
+	if err != nil {
+		panic(err)
+	}
+	DBName, err = config.StringArg("Database name", "Database name, like: 'stoa_blogging_development'.", "dbname")
+	if err != nil {
+		panic(err)
+	}
+	DBConnectionString = genConnectionString(true)
+	DBConnectionStringWithoutDB = genConnectionString(false)
 }
 
-func (c *DBCredentials) ConnectionString() (string, error) {
+func genConnectionString(withDBName bool) string {
 	var sb strings.Builder
-	if len(c.Host) > 0 {
-		sb.WriteString(fmt.Sprintf("host=%s ", c.Host))
+	if len(dbHost) > 0 {
+		sb.WriteString(fmt.Sprintf("host=%s ", dbHost))
 	}
-	sb.WriteString(fmt.Sprintf("port=%d ", c.Port))
-	if len(c.Password) > 0 {
-		sb.WriteString(fmt.Sprintf("password=%s ", c.Password))
+	sb.WriteString(fmt.Sprintf("port=%d ", dbPort))
+	if len(dbPwd) > 0 {
+		sb.WriteString(fmt.Sprintf("password=%s ", dbPwd))
 	}
-	if len(c.User) > 0 {
-		sb.WriteString(fmt.Sprintf("user=%s ", c.User))
+	if len(dbUser) > 0 {
+		sb.WriteString(fmt.Sprintf("user=%s ", dbUser))
 	}
-	if len(c.DBName) > 0 {
-		sb.WriteString(fmt.Sprintf("dbname=%s ", c.DBName))
-	} else {
-		return "", errors.New("no db name given")
+	if withDBName {
+		if len(DBName) > 0 {
+			sb.WriteString(fmt.Sprintf("dbname=%s ", DBName))
+		}
 	}
 	sb.WriteString("sslmode=disable")
-	return sb.String(), nil
-}
-
-func (c *DBCredentials) ConnectionStringWithoutDB() (string, error) {
-	var sb strings.Builder
-	if len(c.Host) > 0 {
-		sb.WriteString(fmt.Sprintf("host=%s ", c.Host))
-	}
-	sb.WriteString(fmt.Sprintf("port=%d ", c.Port))
-	if len(c.Password) > 0 {
-		sb.WriteString(fmt.Sprintf("password=%s ", c.Password))
-	}
-	if len(c.User) > 0 {
-		sb.WriteString(fmt.Sprintf("user=%s ", c.User))
-	}
-	sb.WriteString("sslmode=disable")
-	return sb.String(), nil
-}
-func (c *Configuration) DBCredentials() *DBCredentials {
-	return c.dbCredentials
+	return sb.String()
 }

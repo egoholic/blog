@@ -10,21 +10,14 @@ import (
 	. "github.com/egoholic/blog/lib/store/seed"
 )
 
+var err error
+
 func main() {
-	connStr, err := Config.DBCredentials().ConnectionString()
+	DB, err = sql.Open("postgres", DBConnectionString)
 	if err != nil {
 		panic(err)
 	}
-	DB, err = sql.Open("postgres", connStr)
-	//	defer DB.Close()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("\n\t\t----- Starting populating ... -----\n")
+	fmt.Printf("\n\t\t----- Populating ... -----\n")
 	Seed()
-	if err != nil {
-		fmt.Printf("Error occured during DB populating: `%s`\n", err.Error())
-		panic(err)
-	}
-	fmt.Printf("\t\t----- Populating succeed! -----\n")
+	fmt.Printf("\t\t----- Populated! -----\n")
 }

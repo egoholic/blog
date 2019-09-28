@@ -41,11 +41,7 @@ func (f *SingleStringParamURLForm) CheckAndPopulate(pattern string, chunk string
 
 func main() {
 	logger.Println("server starting...")
-	connStr, err = Config.DBCredentials().ConnectionString()
-	if err != nil {
-		fmt.Printf("ERROR: %s\n", err.Error())
-	}
-	db, err = sql.Open("postgres", connStr)
+	db, err = sql.Open("postgres", DBConnectionString)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err.Error())
 	}

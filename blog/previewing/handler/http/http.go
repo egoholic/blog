@@ -30,7 +30,7 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) func(w http.Respon
 		logger.Println(rb, err)
 		fmt.Println(rb, err)
 
-		err := view.Execute(w, value)
+		err = view.Execute(w, value)
 		if err != nil {
 			logger.Panicf("ERROR-http.go: %s\n", err.Error())
 		}

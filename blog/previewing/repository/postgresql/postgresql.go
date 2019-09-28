@@ -51,6 +51,8 @@ func (r *Repository) RecentPublications() (publications []*previewing.Publicatio
 		}
 		publications = append(publications, &p)
 	}
+	r.logger.Printf("\n\nr-recent: %#v\n\n", publications)
+
 	return
 }
 
@@ -68,6 +70,8 @@ func (r *Repository) PopularPublications() (publications []*previewing.Publicati
 		}
 		publications = append(publications, &p)
 	}
+	r.logger.Printf("\n\nr-pop: %#v\n\n", publications)
+
 	return
 }
 
@@ -85,5 +89,7 @@ func (r *Repository) Rubrics() (rubrics []*previewing.Rubric, err error) {
 		}
 		rubrics = append(rubrics, &r)
 	}
+	r.logger.Printf("\n\nr-rubrics: %#v\n\n", rubrics)
+
 	return
 }

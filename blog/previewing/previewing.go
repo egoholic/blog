@@ -1,6 +1,8 @@
 package previewing
 
-import "log"
+import (
+	"log"
+)
 
 type (
 	Rubric struct {
@@ -41,6 +43,7 @@ func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsP
 
 func (v *Value) PopularPublications() []*Publication {
 	publications, err := v.popularPublicationsProvider.PopularPublications()
+	v.logger.Printf("\n\npop: %#v\n\n", publications)
 	if err != nil {
 		v.logger.Printf("ERROR: %s\n", err.Error())
 	}
@@ -49,6 +52,8 @@ func (v *Value) PopularPublications() []*Publication {
 
 func (v *Value) RecentPublications() []*Publication {
 	publications, err := v.recentPublicationsProvider.RecentPublications()
+	v.logger.Printf("\n\nrecent: %#v\n\n", publications)
+
 	if err != nil {
 		v.logger.Printf("ERROR: %s\n", err.Error())
 	}
@@ -57,6 +62,8 @@ func (v *Value) RecentPublications() []*Publication {
 
 func (v *Value) Rubrics() []*Rubric {
 	rubrics, err := v.rubricsProvider.Rubrics()
+	v.logger.Printf("\n\nrubrics: %#v\n\n", rubrics)
+
 	if err != nil {
 		v.logger.Printf("ERROR: %s\n", err.Error())
 	}

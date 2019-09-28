@@ -4,6 +4,8 @@ Feature: Blog previewing
     In order to investigate recent and most popular content
 
     Background:
+
+    Scenario: visitor previews blod
         Given there is a blog
         And the blog has next rubrics:
           | slug       | meta_keywords          | meta_description                             | title      | description                                                          |
@@ -23,8 +25,6 @@ Feature: Blog previewing
           | interview-with-edward-deming | interview, Edward Deming         | Interview with Edward Deming                                     | Interview with Edward Deming                                     | - How is going? - It is going normal.            | 2019-11-07 09:23:03 | interviews  | 121        |
           | landing-pages-styles-market  | release, landing, styles         | Landing pages styles market released!                            | Landing pages styles market released!                            | Now designers can make money togather with Stoa! | 2019-11-09 12:04:17 | releases    | 102        |
           | onboarding-and-outboarding   | release, onboarding, outboarding | We'are happy to present new onboarding and outboarding features! | We are happy to present new onboarding and outboarding features! | Onboarding and outbording are out!               | 2019-11-21 19:00:59 | releases    | 48         |
-
-    Scenario: visitor investigates recent publications
         When I visit home page
         Then I see next recent publications:
           | slug                         | title                                                            |
@@ -33,15 +33,10 @@ Feature: Blog previewing
           | interview-with-edward-deming | Interview with Edward Deming                                     |
           | landing-pages-styles-market  | Landing pages styles market released!                            |
           | onboarding-and-outboarding   | We are happy to present new onboarding and outboarding features! |
-
-
-    Scenario: visitor investigates most popular puplications
-        When I visit home page
-        Then I see next most popular publications:
+        And I see next most popular publications:
           | slug                         | title                                 |
           | interview-with-edward-deming | Interview with Edward Deming          |
           | landing-pages-styles-market  | Landing pages styles market released! |
           | how-to-invest-in-yourself    | How to invest in yourself             |
           | interview-with-peter-thiel   | Interview with Piter Thiel            |
           | how-to-invent-great-titles   | How to invent great titles?           |
-

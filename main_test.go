@@ -28,7 +28,7 @@ var (
 		Output: colors.Colored(os.Stdout),
 		Format: "cucumber", // can define default values
 	}
-	cmd = exec.Command("go", "run", "targets/web/main.go")
+	cmd = exec.Command("go", "run", "targets/web/main.go", "-dbname stoa_blogging_test_acceptance")
 )
 
 func init() {
@@ -72,7 +72,8 @@ func blogHasNextPublications(publications *gherkin.DataTable) error {
 }
 
 func iVisitHomePage() (err error) {
-	err = page.Navigate("localhost:3000/")
+	expected := fmt.Sprintf("http://localhost:%d/", Port)
+	err = page.Navigate(expected)
 	if err != nil {
 		return
 	}
@@ -80,10 +81,17 @@ func iVisitHomePage() (err error) {
 	if err != nil {
 		return
 	}
-	if url != "http://localhost:3000/" {
-		return fmt.Errorf("expected: `%s`, got: `%s`", "http://localhost:3000/", url)
+	if url != expected {
+		return fmt.Errorf("expected: `%s`, got: `%s`", expected, url)
 	}
-	selector := page.AllByClass("bhv-main-title")
+	selector := page.FindByClass("bhv-main-title")
+	text, err := selector.Text()
+	if err != nil {
+		return err
+	}
+	if text != "BLOG" {
+		return fmt.Errorf("expected header '%s', got: '%s'", "BLOG", text)
+	}
 	cnt, err := selector.Count()
 	if err != nil {
 		return
@@ -99,7 +107,12 @@ func iVisitHomePage() (err error) {
 
 func iSeeNextRecentPublications(publications *gherkin.DataTable) error {
 	expectedNum := len(publications.Rows) - 1
-	selector := page.FirstByClass("bhv-recent-publication")
+	selector := page.AllByClass("bhv-recent-publication")
+	html, err := page.HTML()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n\n\t%s\n\n", html)
 	n, err := selector.Count()
 	if err != nil {
 		return err
@@ -112,7 +125,12 @@ func iSeeNextRecentPublications(publications *gherkin.DataTable) error {
 
 func iSeeNextMostPopularPublications(publications *gherkin.DataTable) error {
 	expectedNum := len(publications.Rows) - 1
-	selector := page.FirstByClass("bhv-popular-publication")
+	selector := page.AllByClass("bhv-popular-publication")
+	html, err := page.HTML()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n\n\t%s\n\n", html)
 	n, err := selector.Count()
 	if err != nil {
 		return err

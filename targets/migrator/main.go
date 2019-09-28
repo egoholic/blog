@@ -13,7 +13,7 @@ func main() {
 	db, err := sql.Open("postgres", DBConnectionStringWithoutDB)
 	defer db.Close()
 	if err != nil {
-		return
+		panic(err)
 	}
 	err = Apply(db)
 	if err != nil {

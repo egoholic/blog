@@ -1,2 +1,0 @@
-mode: atomic
-github.com/egoholic/blog/blog/previewing/previewing.go:22.98,29.2 3 0

@@ -76,9 +76,8 @@ func main() {
 	}
 	defer pidf.Close()
 
-	logger.Println("server listens :3000 port")
-	logger.Fatal(http.ListenAndServe(":3000", router))
-
+	logger.Printf("server listens :%d port\n", Port)
+	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", Port), router))
 }
 
 func prepare(hb HandlerFnBuilder) handler.HandlerFn {

@@ -24,6 +24,7 @@ var (
 	DBConnectionString          string
 	DBConnectionStringWithoutDB string
 
+	Port   int
 	dbHost string
 	dbPort int
 	dbUser string
@@ -40,7 +41,12 @@ func init() {
 	defaults["dbuser"] = "postgres"
 	defaults["dbname"] = "stoa_blogging_development"
 	defaults["dbpwd"] = ""
+	defaults["port"] = "3000"
 	config := cfg.Config(defaults)
+	Port, err = config.IntArg("Web server port", "The port which web server listens to, like: 3000.", "port")
+	if err != nil {
+		panic(err)
+	}
 	dbHost, err = config.StringArg("DB Host name", "Database connection host name, like: 'localhost'.", "dbhost")
 	if err != nil {
 		panic(err)
@@ -61,6 +67,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	config.AddHelpCommand()
 	DBConnectionString = genConnectionString(true)
 	DBConnectionStringWithoutDB = genConnectionString(false)
 }

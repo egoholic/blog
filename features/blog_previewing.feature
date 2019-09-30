@@ -3,9 +3,7 @@ Feature: Blog previewing
     I want to visit home page
     In order to investigate recent and most popular content
 
-    Background:
-
-    Scenario: visitor previews blod
+    Scenario: visitor previews blog
         Given there is a blog
         And the blog has next rubrics:
           | slug       | meta_keywords          | meta_description                             | title      | description                                                          |
@@ -40,3 +38,9 @@ Feature: Blog previewing
           | how-to-invest-in-yourself    | How to invest in yourself             |
           | interview-with-peter-thiel   | Interview with Piter Thiel            |
           | how-to-invent-great-titles   | How to invent great titles?           |
+        And I see next rubrics:
+          | slug       | title      |
+          | how-tos    | How Tos    |
+          | ideas      | Ideas      |
+          | interviews | Interviews |
+          | releases   | Releases   |

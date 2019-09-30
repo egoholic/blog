@@ -167,6 +167,37 @@ func iSeeNextMostPopularPublications(publications *gherkin.DataTable) error {
 	return nil
 }
 
+func iSeeNextRubrics(rubrics *gherkin.DataTable) error {
+	elements, err := page.AllByClass("bhv-rubric").Elements()
+	if err != nil {
+		return err
+	}
+	for i, row := range rubrics.Rows[1:] {
+		elem := elements[i]
+		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
+		if err != nil {
+			return err
+		}
+		href, err := aElem.GetAttribute("href")
+		if err != nil {
+			return err
+		}
+		expectedHref := fmt.Sprintf("http://localhost:%d/r/%s", Port, row.Cells[0].Value)
+		if href != expectedHref {
+			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
+		}
+		linkText, err := aElem.GetText()
+		if err != nil {
+			return err
+		}
+		expectedText := row.Cells[1].Value
+		if linkText != expectedText {
+			return fmt.Errorf("expected link text to be '%s', got: '%s'", linkText, expectedText)
+		}
+	}
+	return nil
+}
+
 func FeatureContext(s *godog.Suite) {
 	s.BeforeScenario(func(interface{}) {
 		err = driver.Start()
@@ -204,6 +235,7 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I visit home page$`, iVisitHomePage)
 	s.Step(`^I see next recent publications:$`, iSeeNextRecentPublications)
 	s.Step(`^I see next most popular publications:$`, iSeeNextMostPopularPublications)
+	s.Step(`^I see next rubrics:$`, iSeeNextRubrics)
 }
 
 func stopBlogApp() (err error) {

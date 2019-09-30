@@ -1,2 +1,3 @@
 blog-web.pid
-
+**/*.log
+/tmp/screenshots/**/*.png

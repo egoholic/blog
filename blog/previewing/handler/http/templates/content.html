@@ -22,12 +22,12 @@
   </div>
     <div id="rubrics" class="micro-list">
       <h3>Rubrics</h3>
-      <ol>
+      <ul>
         {{range .Rubrics}}
         <li class="micro-preview">
           <a href="/r/{{.Slug}}">{{.Title}}</a>
         </li>
         {{end}}
-      </ol>
+      </ul>
     </div>
 </main>{{end}}

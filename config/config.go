@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/egoholic/cfg"
@@ -24,14 +25,15 @@ var (
 	DBConnectionString          string
 	DBConnectionStringWithoutDB string
 
-	Port   int
-	dbHost string
-	dbPort int
-	dbUser string
-	dbPwd  string
-	DBName string
-	config *cfg.Cfg
-	err    error
+	Port    int
+	dbHost  string
+	dbPort  int
+	dbUser  string
+	dbPwd   string
+	DBName  string
+	config  *cfg.Cfg
+	err     error
+	LogFile *os.File
 )
 
 func init() {
@@ -42,6 +44,7 @@ func init() {
 	defaults["dbname"] = "stoa_blogging_development"
 	defaults["dbpwd"] = ""
 	defaults["port"] = "3000"
+	defaults["logpath"] = "stdout"
 	config := cfg.Config(defaults)
 	Port, err = config.IntArg("Web server port", "The port which web server listens to, like: 3000.", "port")
 	if err != nil {
@@ -66,6 +69,18 @@ func init() {
 	DBName, err = config.StringArg("Database name", "Database name, like: 'stoa_blogging_development'.", "dbname")
 	if err != nil {
 		panic(err)
+	}
+	logPath, err := config.StringArg("Log path", "A path to log file. Use 'stdout' to print to the terminal.", "logpath")
+	if err != nil {
+		panic(err)
+	}
+	if logPath == "stdout" {
+		LogFile = os.Stdout
+	} else {
+		LogFile, err = os.Create(logPath)
+		if err != nil {
+			panic(err)
+		}
 	}
 	config.AddHelpCommand()
 	DBConnectionString = genConnectionString(true)

@@ -25,7 +25,7 @@ import (
 type HandlerFnBuilder func(context.Context, *sql.DB, *log.Logger) func(w http.ResponseWriter, r *http.Request, p *params.Params)
 
 var (
-	logger  = log.New(os.Stdout, "blog", 0)
+	logger  = log.New(LogFile, "blog", 0)
 	connStr string
 	db      *sql.DB
 	err     error
@@ -86,6 +86,7 @@ func prepare(hb HandlerFnBuilder) handler.HandlerFn {
 		ctx, cancel := context.WithTimeout(context.Background(), d)
 		defer cancel()
 		h := hb(ctx, db, logger)
+		logger.Println("\n\nhandler executing....\n\n")
 		h(w, r, p)
 	}
 }

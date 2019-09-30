@@ -26,9 +26,9 @@ var (
 	driver = agouti.ChromeDriver()
 	opt    = godog.Options{
 		Output: colors.Colored(os.Stdout),
-		Format: "cucumber", // can define default values
+		Format: "cucumber",
 	}
-	cmd = exec.Command("go", "run", "targets/web/main.go", "-dbname stoa_blogging_test_acceptance")
+	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "./test.log", "-port", "3030")
 )
 
 func init() {

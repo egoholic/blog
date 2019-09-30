@@ -9,15 +9,16 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	. "github.com/egoholic/blog/config"
-	"github.com/onsi/gomega/gexec"
 
 	"github.com/DATA-DOG/godog"
 	"github.com/DATA-DOG/godog/colors"
 	"github.com/DATA-DOG/godog/gherkin"
 	. "github.com/egoholic/blog/lib/store/seed"
 	"github.com/sclevine/agouti"
+	"github.com/sclevine/agouti/api"
 )
 
 var (
@@ -29,7 +30,7 @@ var (
 		Output: colors.Colored(os.Stdout),
 		Format: "cucumber",
 	}
-	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "./test.log", "-port", "3030")
+	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "./test.log", "-port", strconv.Itoa(Port), "-dbname", "stoa_blogging_test_acceptance")
 )
 
 func init() {
@@ -41,8 +42,7 @@ func init() {
 }
 
 func thereIsABlog() (err error) {
-	_, err = gexec.Start(cmd, os.Stdout, os.Stdout)
-	return
+	return cmd.Start()
 }
 
 func blogHasNextRubrics(rubrics *gherkin.DataTable) error {
@@ -86,13 +86,13 @@ func iVisitHomePage() (err error) {
 	if url != expected {
 		return fmt.Errorf("expected: `%s`, got: `%s`", expected, url)
 	}
-	selector := page.FindByClass("bhv-main-title")
+	selector := page.Find(".bhv-main-title")
 	text, err := selector.Text()
 	if err != nil {
 		return err
 	}
 	if text != "BLOG" {
-		return fmt.Errorf("expected header '%s', got: '%s'", "BLOG", text)
+		return fmt.Errorf("expected blog title to be: `%s` got: `%s`\n", "BLOG", text)
 	}
 	cnt, err := selector.Count()
 	if err != nil {
@@ -101,44 +101,68 @@ func iVisitHomePage() (err error) {
 	if cnt != 1 {
 		return fmt.Errorf("expected to find 1, got: %d", cnt)
 	}
-	if txt, _ := selector.Text(); txt != "BLOG" {
-		return fmt.Errorf("expected blog title to be: `%s` got: `%s`\n", "BLOG", txt)
-	}
+
 	return
 }
 
 func iSeeNextRecentPublications(publications *gherkin.DataTable) error {
-	expectedNum := len(publications.Rows) - 1
-	selector := page.AllByClass("bhv-recent-publication")
-	html, err := page.HTML()
+	elements, err := page.AllByClass("bhv-recent-publication").Elements()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n\n\t%s\n\n", html)
-	n, err := selector.Count()
-	if err != nil {
-		return err
-	}
-	if n != expectedNum {
-		return fmt.Errorf("expected %d publications, got: %d", expectedNum, n)
+	for i, row := range publications.Rows[1:] {
+		elem := elements[i]
+		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
+		if err != nil {
+			return err
+		}
+		href, err := aElem.GetAttribute("href")
+		if err != nil {
+			return err
+		}
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
+		if href != expectedHref {
+			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
+		}
+		linkText, err := aElem.GetText()
+		if err != nil {
+			return err
+		}
+		expectedText := row.Cells[1].Value
+		if linkText != expectedText {
+			return fmt.Errorf("expected link text to be '%s', got: '%s'", linkText, expectedText)
+		}
 	}
 	return nil
 }
 
 func iSeeNextMostPopularPublications(publications *gherkin.DataTable) error {
-	expectedNum := len(publications.Rows) - 1
-	selector := page.AllByClass("bhv-popular-publication")
-	html, err := page.HTML()
+	elements, err := page.AllByClass("bhv-popular-publication").Elements()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n\n\t%s\n\n", html)
-	n, err := selector.Count()
-	if err != nil {
-		return err
-	}
-	if n != expectedNum {
-		return fmt.Errorf("expected %d publications, got: %d", expectedNum, n)
+	for i, row := range publications.Rows[1:] {
+		elem := elements[i]
+		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
+		if err != nil {
+			return err
+		}
+		href, err := aElem.GetAttribute("href")
+		if err != nil {
+			return err
+		}
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
+		if href != expectedHref {
+			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
+		}
+		linkText, err := aElem.GetText()
+		if err != nil {
+			return err
+		}
+		expectedText := row.Cells[1].Value
+		if linkText != expectedText {
+			return fmt.Errorf("expected link text to be '%s', got: '%s'", linkText, expectedText)
+		}
 	}
 	return nil
 }
@@ -160,10 +184,17 @@ func FeatureContext(s *godog.Suite) {
 			logger.Fatalf("Can't clean up DB: %s\n", err.Error())
 		}
 	})
-	s.AfterScenario(func(interface{}, error) {
+	s.AfterScenario(func(_ interface{}, err error) {
+		if err != nil {
+			page.Screenshot(fmt.Sprintf("tmp/screenshots/screenshot-%d.png", time.Now().Unix()))
+			logger.Fatal(err.Error())
+		}
 		driver.Stop()
 		page.Destroy()
-		stopBlogApp()
+		err = stopBlogApp()
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
 	})
 
 	s.Step(`there is a blog`, thereIsABlog)
@@ -176,7 +207,8 @@ func FeatureContext(s *godog.Suite) {
 }
 
 func stopBlogApp() (err error) {
-	file, err := os.Open("./blog-web.pid")
+	fmt.Println("stopping blog app")
+	file, err := os.Open("blog-web.pid")
 	if err != nil {
 		return
 	}
@@ -197,5 +229,6 @@ func stopBlogApp() (err error) {
 	if err != nil {
 		return
 	}
+	fmt.Println("pid file dropped")
 	return
 }

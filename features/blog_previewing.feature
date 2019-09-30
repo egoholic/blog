@@ -28,11 +28,11 @@ Feature: Blog previewing
         When I visit home page
         Then I see next recent publications:
           | slug                         | title                                                            |
-          | interview-with-bill-gates    | Interview with Bill Gates                                        |
-          | swarm-landing-pages          | Swarm - evolutional approach to landing pages                    |
-          | interview-with-edward-deming | Interview with Edward Deming                                     |
-          | landing-pages-styles-market  | Landing pages styles market released!                            |
           | onboarding-and-outboarding   | We are happy to present new onboarding and outboarding features! |
+          | landing-pages-styles-market  | Landing pages styles market released!                            |
+          | interview-with-edward-deming | Interview with Edward Deming                                     |
+          | swarm-landing-pages          | Swarm - evolutional approach to landing pages                    |
+          | interview-with-bill-gates    | Interview with Bill Gates                                        |
         And I see next most popular publications:
           | slug                         | title                                 |
           | interview-with-edward-deming | Interview with Edward Deming          |

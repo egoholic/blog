@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	. "github.com/egoholic/blog/config"
+	"github.com/onsi/gomega/gexec"
 
 	"github.com/DATA-DOG/godog"
 	"github.com/DATA-DOG/godog/colors"
@@ -40,7 +41,8 @@ func init() {
 }
 
 func thereIsABlog() (err error) {
-	return cmd.Start()
+	_, err = gexec.Start(cmd, os.Stdout, os.Stdout)
+	return
 }
 
 func blogHasNextRubrics(rubrics *gherkin.DataTable) error {

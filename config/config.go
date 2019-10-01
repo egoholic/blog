@@ -25,15 +25,16 @@ var (
 	DBConnectionString          string
 	DBConnectionStringWithoutDB string
 
-	Port    int
-	dbHost  string
-	dbPort  int
-	dbUser  string
-	dbPwd   string
-	DBName  string
-	config  *cfg.Cfg
-	err     error
-	LogFile *os.File
+	Port        int
+	dbHost      string
+	dbPort      int
+	dbUser      string
+	dbPwd       string
+	DBName      string
+	config      *cfg.Cfg
+	err         error
+	LogFile     *os.File
+	PIDFilePath string
 )
 
 func init() {
@@ -45,6 +46,7 @@ func init() {
 	defaults["dbpwd"] = ""
 	defaults["port"] = "3000"
 	defaults["logpath"] = "stdout"
+	defaults["pidpath"] = "tmp/pids/web.pid"
 	config := cfg.Config(defaults)
 	Port, err = config.IntArg("Web server port", "The port which web server listens to, like: 3000.", "port")
 	if err != nil {
@@ -81,6 +83,10 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
+	}
+	PIDFilePath, err = config.StringArg("PID file path", "A path to the PID file.", "pidpath")
+	if err != nil {
+		panic(err)
 	}
 	config.AddHelpCommand()
 	DBConnectionString = genConnectionString(true)

@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	logger = log.New(os.Stdout, "-> ", 0)
+	logger = log.New(os.Stdout, "blog-test", 0)
 	page   *agouti.Page
 	err    error
 	driver = agouti.ChromeDriver()
@@ -32,7 +32,8 @@ var (
 		Output: colors.Colored(os.Stdout),
 		Format: "cucumber",
 	}
-	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "./test.log", "-port", strconv.Itoa(Port), "-dbname", "stoa_blogging_test_acceptance")
+	port = 8000
+	cmd  = exec.Command("go", "run", "targets/web/main.go", "-logpath", "tmp/log/test.log", "-port", strconv.Itoa(port), "-dbname", "stoa_blogging_test_acceptance", "-pidpath", "tmp/pids/web.pid")
 )
 
 func init() {
@@ -44,7 +45,7 @@ func init() {
 }
 
 func thereWasABlog() (err error) {
-	return cmd.Start()
+	return nil
 }
 
 func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
@@ -77,7 +78,7 @@ func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 
 func iVisitedTheHomePage() (err error) {
 	rubricPreviewingRepo.New(context.TODO(), DB, logger)
-	expected := fmt.Sprintf("http://localhost:%d/", Port)
+	expected := fmt.Sprintf("http://localhost:%d/", port)
 	err = page.Navigate(expected)
 	if err != nil {
 		return
@@ -123,7 +124,7 @@ func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -154,7 +155,7 @@ func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) er
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -185,7 +186,7 @@ func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/r/%s", Port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/r/%s", port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -208,7 +209,7 @@ func iVisitedRubricPage(title string) error {
 	if err != nil {
 		return err
 	}
-	expectedURL := fmt.Sprintf("http://localhost:%d/r/%s", Port, slug)
+	expectedURL := fmt.Sprintf("http://localhost:%d/r/%s", port, slug)
 	err = page.Navigate(expectedURL)
 	if err != nil {
 		return err
@@ -249,7 +250,7 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -265,37 +266,94 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 	return nil
 }
 
+func iVisitedPublicationPage(slug string) error {
+	expectedURL := fmt.Sprintf("http://localhost:%d/p/%s", port, slug)
+	err := page.Navigate(expectedURL)
+	if err != nil {
+		return err
+	}
+	pageURL, err := page.URL()
+	if err != nil {
+		return err
+	}
+	if pageURL != expectedURL {
+		return fmt.Errorf("expected page url to be: '%s', got: '%s'", expectedURL, pageURL)
+	}
+	return nil
+}
+func iReadPublication(expectedTitle string) error {
+	row := DB.QueryRow("SELECT title, slug, content FROM publications WHERE title = $1 LIMIT 1;", expectedTitle)
+	var publication struct{ Title, Slug, Content string }
+	err := row.Scan(&publication.Title, &publication.Slug, &publication.Content)
+	if err != nil {
+		return err
+	}
+	title, err := page.FindByID("bhv-publication__title").Text()
+	if err != nil {
+		return err
+	}
+	if title != expectedTitle {
+		return fmt.Errorf("expected title: '%s', got: '%s'", expectedTitle, title)
+	}
+	content, err := page.FindByID("bhv-publication__content").Text()
+	if err != nil {
+		return err
+	}
+	if content != publication.Content {
+		return fmt.Errorf("expected content: '%s', got: '%s'", publication.Content, content)
+	}
+	return nil
+}
+
 func FeatureContext(s *godog.Suite) {
-	s.BeforeScenario(func(interface{}) {
+	s.BeforeSuite(func() {
 		err = driver.Start()
 		if err != nil {
-			logger.Fatalf("Can't run driver: %s\n", err.Error())
+			logger.Printf("Error: Can't run driver: %s\n", err.Error())
 		}
 		logger.Println("Driver runned!")
 		page, err = driver.NewPage(agouti.Browser("firefox"))
 		if err != nil {
-			logger.Fatalf("Can't run client: %s\n", err.Error())
+			logger.Printf("Error: Can't run client: %s\n", err.Error())
 		}
 		logger.Println("Client runned!")
-		err = Truncate("accounts", "rubrics", "publications", "publication_authors")
+		err = cmd.Start()
 		if err != nil {
-			logger.Fatalf("Can't clean up DB: %s\n", err.Error())
+			logger.Printf("Error: Can't run blog server: %s\n", err.Error())
 		}
 	})
-	s.AfterScenario(func(_ interface{}, err error) {
-		driver.Stop()
-		page.Destroy()
+	s.AfterSuite(func() {
+		err = driver.Stop()
 		if err != nil {
-			page.Screenshot(fmt.Sprintf("tmp/screenshots/screenshot-%d.png", time.Now().Unix()))
-			logger.Fatal(err.Error())
+			logger.Println("Error: ", err.Error())
 		}
 		err = stopBlogApp()
 		if err != nil {
-			logger.Fatal(err.Error())
+			logger.Println("Error: ", err.Error())
+		}
+	})
+	s.BeforeScenario(func(interface{}) {
+		err = Truncate("accounts", "rubrics", "publications", "publication_authors")
+		if err != nil {
+			logger.Printf("Error: Can't clean up DB: %s\n", err.Error())
+		}
+		page, err = driver.NewPage(agouti.Browser("firefox"))
+		if err != nil {
+			logger.Printf("Error: Can't run client: %s\n", err.Error())
+		}
+	})
+	s.AfterScenario(func(_ interface{}, err error) {
+		if err != nil {
+			page.Screenshot(fmt.Sprintf("tmp/screenshots/screenshot-%d.png", time.Now().Unix()))
+			logger.Println("Error: ", err.Error())
+		}
+		err = page.Destroy()
+		if err != nil {
+			logger.Println("Error: ", err.Error())
 		}
 	})
 
-	s.Step(`there was a blog`, thereWasABlog)
+	s.Step(`^there was a blog$`, thereWasABlog)
 	s.Step(`^the blog had the following rubrics:$`, blogHadTheFollowingRubrics)
 	s.Step(`^the blog had the following publications:$`, blogHadTheFollowingPublications)
 
@@ -305,11 +363,13 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I saw the following rubrics:$`, iSawTheFollowingRubrics)
 	s.Step(`^I visited "([^"]*)" rubric page$`, iVisitedRubricPage)
 	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
+	s.Step(`^I visited "([^"]*)" publication page$`, iVisitedPublicationPage)
+	s.Step(`^I read "([^"]*)" publication$`, iReadPublication)
 }
 
 func stopBlogApp() (err error) {
 	fmt.Println("stopping blog app")
-	file, err := os.Open("blog-web.pid")
+	file, err := os.Open(PIDFilePath)
 	if err != nil {
 		return
 	}

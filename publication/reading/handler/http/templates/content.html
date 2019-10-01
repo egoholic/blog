@@ -1,8 +1,10 @@
 {{define "content"}}
 <div id="main">
   <article class="publication">
-    <h1>{{.Publication.Title}}</h1>
-    {{.Publication.Content}}
+    <h1 id="bhv-publication__title">{{.Publication.Title}}</h1>
+    <div id="bhv-publication__content">
+      {{.Publication.Content}}
+    </div>
     authors:
     <ol class=".authors-list">
     {{range .Authors}}

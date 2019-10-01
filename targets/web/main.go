@@ -66,7 +66,7 @@ func main() {
 	rubrics.Child(":slug", &SingleStringParamURLForm{}).GET(prepare(rubricPreviewing.New), "presents rubrics and related publications")
 
 	pid := os.Getpid()
-	pidf, err := os.Create("blog-web.pid")
+	pidf, err := os.Create(PIDFilePath)
 	if err != nil {
 		fmt.Printf("FATALPID: %s   = %d\n", err.Error(), pid)
 	}
@@ -74,7 +74,16 @@ func main() {
 	if err != nil {
 		fmt.Printf("FATALPID: %s   = %d\n", err.Error(), pid)
 	}
-	defer pidf.Close()
+	defer func() {
+		err = pidf.Close()
+		if err != nil {
+			fmt.Printf("FATALPID: %s   = %d\n", err.Error(), pid)
+		}
+		err = os.Remove(PIDFilePath)
+		if err != nil {
+			fmt.Printf("FATALPID: %s   = %d\n", err.Error(), pid)
+		}
+	}()
 
 	logger.Printf("server listens :%d port\n", Port)
 	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", Port), router))

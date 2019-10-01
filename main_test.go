@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/DATA-DOG/godog/colors"
 	"github.com/DATA-DOG/godog/gherkin"
 	. "github.com/egoholic/blog/lib/store/seed"
+	rubricPreviewingRepo "github.com/egoholic/blog/rubric/previewing/repository/postgresql"
 	"github.com/sclevine/agouti"
 	"github.com/sclevine/agouti/api"
 )
@@ -41,11 +43,11 @@ func init() {
 	}
 }
 
-func thereIsABlog() (err error) {
+func thereWasABlog() (err error) {
 	return cmd.Start()
 }
 
-func blogHasNextRubrics(rubrics *gherkin.DataTable) error {
+func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	rubricsToInsert := make([]*Tuple, len(rubrics.Rows)-1)
 	header := rubrics.Rows[0].Cells
 	for i, rrow := range rubrics.Rows[1:] {
@@ -59,7 +61,7 @@ func blogHasNextRubrics(rubrics *gherkin.DataTable) error {
 	return InsertList(rubricsToInsert)
 }
 
-func blogHasNextPublications(publications *gherkin.DataTable) error {
+func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 	publicationsToInsert := make([]*Tuple, len(publications.Rows)-1)
 	header := publications.Rows[0].Cells
 	for i, prow := range publications.Rows[1:] {
@@ -73,7 +75,8 @@ func blogHasNextPublications(publications *gherkin.DataTable) error {
 	return InsertList(publicationsToInsert)
 }
 
-func iVisitHomePage() (err error) {
+func iVisitedTheHomePage() (err error) {
+	rubricPreviewingRepo.New(context.TODO(), DB, logger)
 	expected := fmt.Sprintf("http://localhost:%d/", Port)
 	err = page.Navigate(expected)
 	if err != nil {
@@ -105,7 +108,7 @@ func iVisitHomePage() (err error) {
 	return
 }
 
-func iSeeNextRecentPublications(publications *gherkin.DataTable) error {
+func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
 	elements, err := page.AllByClass("bhv-recent-publication").Elements()
 	if err != nil {
 		return err
@@ -136,7 +139,7 @@ func iSeeNextRecentPublications(publications *gherkin.DataTable) error {
 	return nil
 }
 
-func iSeeNextMostPopularPublications(publications *gherkin.DataTable) error {
+func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) error {
 	elements, err := page.AllByClass("bhv-popular-publication").Elements()
 	if err != nil {
 		return err
@@ -167,7 +170,7 @@ func iSeeNextMostPopularPublications(publications *gherkin.DataTable) error {
 	return nil
 }
 
-func iSeeNextRubrics(rubrics *gherkin.DataTable) error {
+func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	elements, err := page.AllByClass("bhv-rubric").Elements()
 	if err != nil {
 		return err
@@ -183,6 +186,70 @@ func iSeeNextRubrics(rubrics *gherkin.DataTable) error {
 			return err
 		}
 		expectedHref := fmt.Sprintf("http://localhost:%d/r/%s", Port, row.Cells[0].Value)
+		if href != expectedHref {
+			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
+		}
+		linkText, err := aElem.GetText()
+		if err != nil {
+			return err
+		}
+		expectedText := row.Cells[1].Value
+		if linkText != expectedText {
+			return fmt.Errorf("expected link text to be '%s', got: '%s'", linkText, expectedText)
+		}
+	}
+	return nil
+}
+
+func iVisitedRubricPage(title string) error {
+	r := DB.QueryRow("SELECT r.slug FROM (SELECT slug, title FROM rubrics WHERE title = $1 LIMIT 1) AS r LIMIT 1;", title)
+	var slug string
+	err = r.Scan(&slug)
+	if err != nil {
+		return err
+	}
+	expectedURL := fmt.Sprintf("http://localhost:%d/r/%s", Port, slug)
+	err = page.Navigate(expectedURL)
+	if err != nil {
+		return err
+	}
+	url, err := page.URL()
+	if err != nil {
+		return err
+	}
+	if url != expectedURL {
+		return fmt.Errorf("expected to visit: '%s', visited: '%s'", expectedURL, url)
+	}
+	elems, err := page.FindByID("bhv-rubric-title").Elements()
+	if err != nil {
+		return err
+	}
+	rubric := elems[0]
+	t, err := rubric.GetText()
+	if err != nil {
+		return err
+	}
+	if t != title {
+		return fmt.Errorf("Expected rubric title: '%s', got: '%s'", title, t)
+	}
+	return nil
+}
+func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
+	elements, err := page.AllByClass("bhv-publication-preview").Elements()
+	if err != nil {
+		return err
+	}
+	for i, row := range publications.Rows[1:] {
+		elem := elements[i]
+		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
+		if err != nil {
+			return err
+		}
+		href, err := aElem.GetAttribute("href")
+		if err != nil {
+			return err
+		}
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -216,26 +283,28 @@ func FeatureContext(s *godog.Suite) {
 		}
 	})
 	s.AfterScenario(func(_ interface{}, err error) {
+		driver.Stop()
+		page.Destroy()
 		if err != nil {
 			page.Screenshot(fmt.Sprintf("tmp/screenshots/screenshot-%d.png", time.Now().Unix()))
 			logger.Fatal(err.Error())
 		}
-		driver.Stop()
-		page.Destroy()
 		err = stopBlogApp()
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
 	})
 
-	s.Step(`there is a blog`, thereIsABlog)
-	s.Step(`^the blog has next rubrics:$`, blogHasNextRubrics)
-	s.Step(`^the blog has next publications:$`, blogHasNextPublications)
+	s.Step(`there was a blog`, thereWasABlog)
+	s.Step(`^the blog had the following rubrics:$`, blogHadTheFollowingRubrics)
+	s.Step(`^the blog had the following publications:$`, blogHadTheFollowingPublications)
 
-	s.Step(`^I visit home page$`, iVisitHomePage)
-	s.Step(`^I see next recent publications:$`, iSeeNextRecentPublications)
-	s.Step(`^I see next most popular publications:$`, iSeeNextMostPopularPublications)
-	s.Step(`^I see next rubrics:$`, iSeeNextRubrics)
+	s.Step(`^I visited the home page$`, iVisitedTheHomePage)
+	s.Step(`^I saw the following recent publications:$`, iSawTheFollowingRecentPublications)
+	s.Step(`^I saw the following most popular publications:$`, iSawTheFollowingMostPopularPublications)
+	s.Step(`^I saw the following rubrics:$`, iSawTheFollowingRubrics)
+	s.Step(`^I visited "([^"]*)" rubric page$`, iVisitedRubricPage)
+	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
 }
 
 func stopBlogApp() (err error) {

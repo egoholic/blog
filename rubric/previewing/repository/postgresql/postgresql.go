@@ -47,7 +47,8 @@ var publicationsQuery = `SELECT slug,
 															        popularity,
 															        rubric_slug
 											         FROM publications
-													     WHERE rubric_slug = $1) AS selected;`
+															 WHERE rubric_slug = $1) AS selected
+												 ORDER BY created_at DESC;`
 
 func (r *Repository) PublicationsOf(s string) (publications []*previewing.Publication, err error) {
 	rows, err := r.db.QueryContext(r.ctx, publicationsQuery, s)

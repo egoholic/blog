@@ -2,6 +2,15 @@
 
 ## FAQ
 
+### Requirements
+We use chromedriver for acceptance (Cucumber (godog)) tests:
+```$ brew install chromedriver```
+
+We store data with PostgreSQL 11 RDBMS. For local development we recommend to install PostgreSQL on MacOS with Postgres.app installer: https://postgresapp.com
+
+### TODO: Using with Docker
+TODO
+
 ### Configuration
 ```
 $ go run targets/web/main.go help

@@ -4,8 +4,7 @@ Feature: Rubric previewing
     In order to preview publications of the same kind
 
     Scenario: visitor previews rubric
-        Given there was a blog
-        And the blog had the following rubrics:
+        Given the blog had the following rubrics:
           | slug       | meta_keywords          | meta_description                             | title      | description                                                          |
           | interviews | interview, VIP, celebs | Interviews with known persons.               | Interviews | Know what best practitioners and achievers think about the industry. |
           | how-tos    | how to                 | One-bite sized instructions to achieve more. | How Tos    | One-bite sized instructions to achieve more.                         |

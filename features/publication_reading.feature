@@ -4,8 +4,7 @@ Feature: Publication reading
     In order to read its content
 
     Scenario: visitor reads publication
-        Given there was a blog
-        And the blog had the following rubrics:
+        Given the blog had the following rubrics:
           | slug    | meta_keywords | meta_description                             | title   | description                                  |
           | how-tos | how to        | One-bite sized instructions to achieve more. | How Tos | One-bite sized instructions to achieve more. |
         And the blog had the following publications:

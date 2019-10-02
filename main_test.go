@@ -44,10 +44,6 @@ func init() {
 	}
 }
 
-func thereWasABlog() (err error) {
-	return nil
-}
-
 func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	rubricsToInsert := make([]*Tuple, len(rubrics.Rows)-1)
 	header := rubrics.Rows[0].Cells
@@ -353,7 +349,6 @@ func FeatureContext(s *godog.Suite) {
 		}
 	})
 
-	s.Step(`^there was a blog$`, thereWasABlog)
 	s.Step(`^the blog had the following rubrics:$`, blogHadTheFollowingRubrics)
 	s.Step(`^the blog had the following publications:$`, blogHadTheFollowingPublications)
 

@@ -5,6 +5,11 @@
 | ideas      | idea, creativity       | Insightful ideas of using chaos around you.  | Ideas      | Insightful ideas of using chaos around you.                          |
 | releases   | release, news          | Releases of new possibilities.               | Releases   | Releases of new possibilities.                                       |
 
+// ACCOUNTS
+| login     | first_name | last_name  | bio                            |
+| jkirk     | James      | Kirk       | Good guy and friend of mine.   |
+| pbird     | Peter      | Bird       | Nice engineer and businessman. |
+| fgelbert  | Frederick  | Gelbert    | Problem solver and researcher. |
 
 // PUBLICATIONS
 | slug                         | meta_keywords                    | meta_description                                                 | title                                                            | content                                          | created_at          | rubric_slug | popularity |
@@ -18,3 +23,20 @@
 | interview-with-edward-deming | interview, Edward Deming         | Interview with Edward Deming                                     | Interview with Edward Deming                                     | - How is going? - It is going normal.            | 2019-11-07 09:23:03 | interviews  | 121        |
 | landing-pages-styles-market  | release, landing, styles         | Landing pages styles market released!                            | Landing pages styles market released!                            | Now designers can make money togather with Stoa! | 2019-11-09 12:04:17 | releases    | 102        |
 | onboarding-and-outboarding   | release, onboarding, outboarding | We'are happy to present new onboarding and outboarding features! | We are happy to present new onboarding and outboarding features! | Onboarding and outbording are out!               | 2019-11-21 19:00:59 | releases    | 48         |
+
+// PUBLICATION AUTHORS
+| publication_slug             | author_login |
+| interview-with-peter-thiel   | jkirk        |
+| interview-with-peter-thiel   | pbird        |
+| how-to-invest-in-yourself    | fgelbert     |
+| interview-with-jack-black    | jkirk        |
+| bottlenecks-metaphora        | jkirk        |
+| bottlenecks-metaphora        | pbird        |
+| bottlenecks-metaphora        | fgelbert     |
+| how-to-invent-great-titles   | fgelbert     |
+| interview-with-bill-gates    | pbird        |
+| swarm-landing-pages          | jkirk        |
+| interview-with-edward-deming | jkirk        |
+| interview-with-edward-deming | pbird        |
+| landing-pages-styles-market  | fgelbert     |
+| onboarding-and-outboarding   | jkirk        |

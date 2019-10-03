@@ -58,8 +58,42 @@ func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	return InsertList(rubricsToInsert)
 }
 
+func theBlogHadTheFollowingAuthors(authors *gherkin.DataTable) error {
+	authorsToInsert := make([]*Tuple, len(authors.Rows)-1)
+	header := authors.Rows[0].Cells
+	for i, rrow := range authors.Rows[1:] {
+		attrs := map[string]string{}
+		values := rrow.Cells
+		for attrIdx, attrName := range header {
+			attrs[attrName.Value] = values[attrIdx].Value
+		}
+		authorsToInsert[i] = Must(NewAccount(attrs))
+	}
+	return InsertList(authorsToInsert)
+}
+
+func iVisitedAuthorPage(login string) error {
+	expectedURL := fmt.Sprintf("http://localhost:%d/a/%s", Port, login)
+	err := page.Navigate(expectedURL)
+	if err != nil {
+		return err
+	}
+	url, err := page.URL()
+	if err != nil {
+		return err
+	}
+	if url != expectedURL {
+		return fmt.Errorf("expected page URL: '%s', got: '%s'", expectedURL, url)
+	}
+	return nil
+}
+func iSawAuthor(fullName string) error {
+	return nil
+}
+
 func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 	publicationsToInsert := make([]*Tuple, len(publications.Rows)-1)
+	publicationAuthorsToInsert := make([]*Tuple, len(publications.Rows)-1)
 	header := publications.Rows[0].Cells
 	for i, prow := range publications.Rows[1:] {
 		attrs := map[string]string{}
@@ -67,9 +101,14 @@ func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 		for attrIdx, attrName := range header {
 			attrs[attrName.Value] = values[attrIdx].Value
 		}
+		logins := strings.Split(attrs["author_logins"], ", ")
 		publicationsToInsert[i] = Must(NewPublication(attrs))
+		publicationAuthorsToInsert = Must(NewPublicationAuthor())
 	}
-	return InsertList(publicationsToInsert)
+	err := InsertList(publicationsToInsert)
+	if err != nil {
+	}
+	header = publications.Rows[0].Cells[8]
 }
 
 func iVisitedTheHomePage() (err error) {
@@ -351,7 +390,6 @@ func FeatureContext(s *godog.Suite) {
 
 	s.Step(`^the blog had the following rubrics:$`, blogHadTheFollowingRubrics)
 	s.Step(`^the blog had the following publications:$`, blogHadTheFollowingPublications)
-
 	s.Step(`^I visited the home page$`, iVisitedTheHomePage)
 	s.Step(`^I saw the following recent publications:$`, iSawTheFollowingRecentPublications)
 	s.Step(`^I saw the following most popular publications:$`, iSawTheFollowingMostPopularPublications)
@@ -360,6 +398,10 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
 	s.Step(`^I visited "([^"]*)" publication page$`, iVisitedPublicationPage)
 	s.Step(`^I read "([^"]*)" publication$`, iReadPublication)
+	s.Step(`^the blog had the following authors:$`, theBlogHadTheFollowingAuthors)
+	s.Step(`^I visited "([^"]*)" author page$`, iVisitedAuthorPage)
+	s.Step(`^I saw "([^"]*)" author$`, iSawAuthor)
+	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
 }
 
 func stopBlogApp() (err error) {

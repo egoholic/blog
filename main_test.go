@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -47,9 +48,9 @@ func init() {
 func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	rubricsToInsert := make([]*Tuple, len(rubrics.Rows)-1)
 	header := rubrics.Rows[0].Cells
-	for i, rrow := range rubrics.Rows[1:] {
+	for i, row := range rubrics.Rows[1:] {
 		attrs := map[string]string{}
-		values := rrow.Cells
+		values := row.Cells
 		for attrIdx, attrName := range header {
 			attrs[attrName.Value] = values[attrIdx].Value
 		}
@@ -61,9 +62,9 @@ func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 func theBlogHadTheFollowingAuthors(authors *gherkin.DataTable) error {
 	authorsToInsert := make([]*Tuple, len(authors.Rows)-1)
 	header := authors.Rows[0].Cells
-	for i, rrow := range authors.Rows[1:] {
+	for i, row := range authors.Rows[1:] {
 		attrs := map[string]string{}
-		values := rrow.Cells
+		values := row.Cells
 		for attrIdx, attrName := range header {
 			attrs[attrName.Value] = values[attrIdx].Value
 		}
@@ -73,7 +74,7 @@ func theBlogHadTheFollowingAuthors(authors *gherkin.DataTable) error {
 }
 
 func iVisitedAuthorPage(login string) error {
-	expectedURL := fmt.Sprintf("http://localhost:%d/a/%s", Port, login)
+	expectedURL := fmt.Sprintf("http://localhost:%d/a/%s", port, login)
 	err := page.Navigate(expectedURL)
 	if err != nil {
 		return err
@@ -88,12 +89,33 @@ func iVisitedAuthorPage(login string) error {
 	return nil
 }
 func iSawAuthor(fullName string) error {
+	pageHeaderElems, err := page.AllByID("bhv-author__full_name").Elements()
+	if err != nil {
+		return err
+	}
+	if len(pageHeaderElems) == 0 {
+		return errors.New("header element not found")
+	}
+	pageHeader, err := pageHeaderElems[0].GetText()
+	if err != nil {
+		return err
+	}
+
+	html, err := page.HTML()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n\n\n%s\n\n\n", html)
+	if pageHeader != fullName {
+		return fmt.Errorf("wrong page header, expected: '%s', got: '%s'", fullName, pageHeader)
+	}
 	return nil
 }
 
 func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
-	publicationsToInsert := make([]*Tuple, len(publications.Rows)-1)
-	publicationAuthorsToInsert := make([]*Tuple, len(publications.Rows)-1)
+	ln := len(publications.Rows) - 1
+	publicationsToInsert := make([]*Tuple, ln)
+	publicationAuthorsToInsert := []*Tuple{}
 	header := publications.Rows[0].Cells
 	for i, prow := range publications.Rows[1:] {
 		attrs := map[string]string{}
@@ -101,14 +123,25 @@ func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 		for attrIdx, attrName := range header {
 			attrs[attrName.Value] = values[attrIdx].Value
 		}
-		logins := strings.Split(attrs["author_logins"], ", ")
+		loginsStr, ok := attrs["author_logins"]
+		if ok {
+			logins := strings.Split(loginsStr, ", ")
+			delete(attrs, "author_logins")
+			slug := attrs["slug"]
+			for _, al := range logins {
+				authorAttrs := map[string]string{}
+				authorAttrs["publication_slug"] = slug
+				authorAttrs["author_login"] = al
+				publicationAuthorsToInsert = append(publicationAuthorsToInsert, Must(NewPublicationAuthor(authorAttrs)))
+			}
+		}
 		publicationsToInsert[i] = Must(NewPublication(attrs))
-		publicationAuthorsToInsert = Must(NewPublicationAuthor())
 	}
 	err := InsertList(publicationsToInsert)
 	if err != nil {
+		return err
 	}
-	header = publications.Rows[0].Cells[8]
+	return InsertList(publicationAuthorsToInsert)
 }
 
 func iVisitedTheHomePage() (err error) {
@@ -275,7 +308,13 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 	if err != nil {
 		return err
 	}
-	for i, row := range publications.Rows[1:] {
+	ln := len(elements)
+	rows := publications.Rows[1:]
+	expectedLn := len(rows)
+	if ln != expectedLn {
+		return fmt.Errorf("wrong number of publications, expected: '%d', got: '%d'", expectedLn, ln)
+	}
+	for i, row := range rows {
 		elem := elements[i]
 		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
 		if err != nil {
@@ -379,7 +418,12 @@ func FeatureContext(s *godog.Suite) {
 	})
 	s.AfterScenario(func(_ interface{}, err error) {
 		if err != nil {
-			page.Screenshot(fmt.Sprintf("tmp/screenshots/screenshot-%d.png", time.Now().Unix()))
+			url, err2 := page.URL()
+			if err2 != nil {
+				url = ""
+			}
+			url = strings.ReplaceAll(url, "/", "--")
+			page.Screenshot(fmt.Sprintf("tmp/screenshots/screenshot-%d[%s].png", time.Now().Unix(), url))
 			logger.Println("Error: ", err.Error())
 		}
 		err = page.Destroy()

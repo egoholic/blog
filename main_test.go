@@ -44,7 +44,6 @@ func init() {
 		panic(err)
 	}
 }
-
 func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	rubricsToInsert := make([]*Tuple, len(rubrics.Rows)-1)
 	header := rubrics.Rows[0].Cells
@@ -58,7 +57,6 @@ func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	}
 	return InsertList(rubricsToInsert)
 }
-
 func theBlogHadTheFollowingAuthors(authors *gherkin.DataTable) error {
 	authorsToInsert := make([]*Tuple, len(authors.Rows)-1)
 	header := authors.Rows[0].Cells
@@ -72,7 +70,6 @@ func theBlogHadTheFollowingAuthors(authors *gherkin.DataTable) error {
 	}
 	return InsertList(authorsToInsert)
 }
-
 func iVisitedAuthorPage(login string) error {
 	expectedURL := fmt.Sprintf("http://localhost:%d/a/%s", port, login)
 	err := page.Navigate(expectedURL)
@@ -100,18 +97,14 @@ func iSawAuthor(fullName string) error {
 	if err != nil {
 		return err
 	}
-
-	html, err := page.HTML()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n\n\n%s\n\n\n", html)
 	if pageHeader != fullName {
 		return fmt.Errorf("wrong page header, expected: '%s', got: '%s'", fullName, pageHeader)
 	}
 	return nil
 }
-
 func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 	ln := len(publications.Rows) - 1
 	publicationsToInsert := make([]*Tuple, ln)
@@ -143,7 +136,6 @@ func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 	}
 	return InsertList(publicationAuthorsToInsert)
 }
-
 func iVisitedTheHomePage() (err error) {
 	rubricPreviewingRepo.New(context.TODO(), DB, logger)
 	expected := fmt.Sprintf("http://localhost:%d/", port)
@@ -173,16 +165,20 @@ func iVisitedTheHomePage() (err error) {
 	if cnt != 1 {
 		return fmt.Errorf("expected to find 1, got: %d", cnt)
 	}
-
 	return
 }
-
 func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
 	elements, err := page.AllByClass("bhv-recent-publication").Elements()
 	if err != nil {
 		return err
 	}
-	for i, row := range publications.Rows[1:] {
+	rows := publications.Rows[1:]
+	ln := len(elements)
+	expectedLn := len(rows)
+	if ln != expectedLn {
+		return fmt.Errorf("expected: '%d' publications, got: '%d'", expectedLn, ln)
+	}
+	for i, row := range rows {
 		elem := elements[i]
 		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
 		if err != nil {
@@ -207,13 +203,18 @@ func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
 	}
 	return nil
 }
-
 func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) error {
 	elements, err := page.AllByClass("bhv-popular-publication").Elements()
 	if err != nil {
 		return err
 	}
-	for i, row := range publications.Rows[1:] {
+	rows := publications.Rows[1:]
+	ln := len(elements)
+	expectedLn := len(rows)
+	if ln != expectedLn {
+		return fmt.Errorf("expected: '%d' publications, got: '%d'", expectedLn, ln)
+	}
+	for i, row := range rows {
 		elem := elements[i]
 		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
 		if err != nil {
@@ -238,7 +239,6 @@ func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) er
 	}
 	return nil
 }
-
 func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	elements, err := page.AllByClass("bhv-rubric").Elements()
 	if err != nil {
@@ -269,7 +269,6 @@ func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	}
 	return nil
 }
-
 func iVisitedRubricPage(title string) error {
 	r := DB.QueryRow("SELECT r.slug FROM (SELECT slug, title FROM rubrics WHERE title = $1 LIMIT 1) AS r LIMIT 1;", title)
 	var slug string
@@ -339,7 +338,6 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 	}
 	return nil
 }
-
 func iVisitedPublicationPage(slug string) error {
 	expectedURL := fmt.Sprintf("http://localhost:%d/p/%s", port, slug)
 	err := page.Navigate(expectedURL)
@@ -378,7 +376,6 @@ func iReadPublication(expectedTitle string) error {
 	}
 	return nil
 }
-
 func FeatureContext(s *godog.Suite) {
 	s.BeforeSuite(func() {
 		err = driver.Start()

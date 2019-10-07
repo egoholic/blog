@@ -24,6 +24,5 @@ Feature: Author previewing
         Then I saw "James Kirk" author
         And I saw the following publications:
           | slug                       | title                      |
-          | interview-with-peter-thiel | Interview with Piter Thiel |
-          | how-to-invest-in-yourself  | How to invest in yourself  |
           | interview-with-jack-black  | Interview with Jack Black  |
+          | interview-with-peter-thiel | Interview with Piter Thiel |

@@ -30,7 +30,8 @@ var (
 											FROM publications AS p
 											INNER JOIN publication_authors AS pa
 												      ON pa.author_login     = $1
-												     AND pa.publication_slug = p.slug;`
+														 AND pa.publication_slug = p.slug
+											ORDER BY created_at DESC;`
 )
 
 func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {

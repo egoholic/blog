@@ -324,7 +324,6 @@ func InsertList(tuples []*Tuple) (err error) {
 	}
 	values = strings.Join(manyValues, ", ")
 	q := fmt.Sprintf("INSERT INTO %s %s VALUES %s;", tableName, header, values)
-	fmt.Printf("\n\n\n%s\n\n\n", q)
 	_, err = DB.Exec(q)
 	if err != nil {
 		fmt.Printf("error: %s\n", err.Error())

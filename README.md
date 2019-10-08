@@ -84,17 +84,22 @@ $ go run targets/web/main.go help
 
 ### How to create DB and schema?
 
-```$ go run targets/migrator/main.go```
+```$ ./bin/createdb.sh <DB-PREFIX, like: production, development, test-acceptance>```
 
 ### How to seed DB?
 
-```$ go run targets/seed/main.go```
+```$ ./bin/seed.sh <DB-PREFIX, like: production, development, test-acceptance>```
 
 ### How to run web-server?
 
-```$ go run targets/web/main.go```
+```./bin/run.sh <DB-PREFIX, like: production, development, test-acceptance>```
 
 It uses :3000 port.
+
+### How to build?
+
+```./bin/build.sh```
+
 
 ### How to run acceptance tests?
 
@@ -102,4 +107,4 @@ We use godog (Cucumber for Golang) and Agouti for acceptance tests via GUI.
 
 You can run tests with:
 
-```$ godog --random```
+```$ ./bin/test-acceptance.sh```

@@ -1,3 +1,4 @@
 /tmp/screenshots/**/*.png
 /tmp/pids/**/*.pid
 /tmp/log/**/*.log
+/builds/**/*.exe

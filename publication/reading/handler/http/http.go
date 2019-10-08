@@ -26,7 +26,6 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) func(w http.Respon
 			logger.Panicf("ERROR: slug param should be string. (%#v) given\n", slug)
 		}
 		value := reading.New(logger, repo, repo, slug)
-		logger.Printf("\n\n\n\tvalue: %#v\n\n\tpublication: %#v\n\n\tauthors: %#v\n--- --- ---\n\n\n", value, value.Publication(), value.Authors())
 		err := view.Execute(w, value)
 		if err != nil {
 			logger.Panicf("ERROR: %s\n", err.Error())

@@ -22,10 +22,14 @@ Feature: Rubric previewing
           | interview-with-edward-deming | interview, Edward Deming         | Interview with Edward Deming                                     | Interview with Edward Deming                                     | - How is going? - It is going normal.            | 2019-11-07 09:23:03 | interviews  | 121        |
           | landing-pages-styles-market  | release, landing, styles         | Landing pages styles market released!                            | Landing pages styles market released!                            | Now designers can make money togather with Stoa! | 2019-11-09 12:04:17 | releases    | 102        |
           | onboarding-and-outboarding   | release, onboarding, outboarding | We'are happy to present new onboarding and outboarding features! | We are happy to present new onboarding and outboarding features! | Onboarding and outbording are out!               | 2019-11-21 19:00:59 | releases    | 48         |
-        When I visited "Releases" rubric page
+        When I visited "releases" rubric page
+        Then I saw "Releases" rubric
         And I saw the following publications:
           | slug                         | title                                                            |
           | onboarding-and-outboarding   | We are happy to present new onboarding and outboarding features! |
           | landing-pages-styles-market  | Landing pages styles market released!                            |
           | swarm-landing-pages          | Swarm - evolutional approach to landing pages                    |
 
+    Scenario: visitor tries to preview unexisting rubric
+        When I visited "wrong-slug" rubric page
+        Then I see that page not found

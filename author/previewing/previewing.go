@@ -15,10 +15,11 @@ type (
 		Popularity int
 	}
 	Value struct {
-		logger               *log.Logger
-		authorProvider       AuthorProvider
+		logger *log.Logger
+		author *Author
+		login  string
+
 		publicationsProvider PublicationsProvider
-		login                string
 	}
 	AuthorProvider interface {
 		AuthorByLogin(l string) (*Author, error)
@@ -28,15 +29,18 @@ type (
 	}
 )
 
-func New(l *log.Logger, ap AuthorProvider, pp PublicationsProvider, login string) *Value {
+func New(l *log.Logger, ap AuthorProvider, pp PublicationsProvider, login string) (*Value, error) {
+	author, err := ap.AuthorByLogin(login)
+	if err != nil {
+		return nil, err
+	}
 	return &Value{
 		logger:               l,
-		authorProvider:       ap,
+		author:               author,
 		publicationsProvider: pp,
 		login:                login,
-	}
+	}, nil
 }
-
 func (v *Value) Publications() []*Publication {
 	publications, err := v.publicationsProvider.PublicationsOf(v.login)
 	if err != nil {
@@ -44,11 +48,6 @@ func (v *Value) Publications() []*Publication {
 	}
 	return publications
 }
-
 func (v *Value) Author() *Author {
-	author, err := v.authorProvider.AuthorByLogin(v.login)
-	if err != nil {
-		v.logger.Printf("ERROR: %s\n", err.Error())
-	}
-	return author
+	return v.author
 }

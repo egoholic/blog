@@ -269,13 +269,7 @@ func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	}
 	return nil
 }
-func iVisitedRubricPage(title string) error {
-	r := DB.QueryRow("SELECT r.slug FROM (SELECT slug, title FROM rubrics WHERE title = $1 LIMIT 1) AS r LIMIT 1;", title)
-	var slug string
-	err = r.Scan(&slug)
-	if err != nil {
-		return err
-	}
+func iVisitedRubricPage(slug string) error {
 	expectedURL := fmt.Sprintf("http://localhost:%d/r/%s", port, slug)
 	err = page.Navigate(expectedURL)
 	if err != nil {
@@ -288,6 +282,9 @@ func iVisitedRubricPage(title string) error {
 	if url != expectedURL {
 		return fmt.Errorf("expected to visit: '%s', visited: '%s'", expectedURL, url)
 	}
+	return nil
+}
+func iSawRubric(title string) error {
 	elems, err := page.FindByID("bhv-rubric-title").Elements()
 	if err != nil {
 		return err
@@ -376,6 +373,27 @@ func iReadPublication(expectedTitle string) error {
 	}
 	return nil
 }
+func iSeeThatPageNotFound() error {
+	selector := page.AllByID("bhv-system-page-not-found")
+	elements, err := selector.Elements()
+	if err != nil {
+		return err
+	}
+	if len(elements) == 0 {
+		return fmt.Errorf("expected to find: '%s', but element not found", selector.String())
+	}
+	header := elements[0]
+	text, err := header.GetText()
+	if err != nil {
+		return err
+	}
+
+	expectedText := "PAGE NOT FOUND"
+	if text != expectedText {
+		return fmt.Errorf("expected text: '%s', got: '%s'", expectedText, text)
+	}
+	return nil
+}
 func FeatureContext(s *godog.Suite) {
 	s.BeforeSuite(func() {
 		err = driver.Start()
@@ -443,6 +461,9 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I visited "([^"]*)" author page$`, iVisitedAuthorPage)
 	s.Step(`^I saw "([^"]*)" author$`, iSawAuthor)
 	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
+	s.Step(`^I see that page not found$`, iSeeThatPageNotFound)
+	s.Step(`^I saw "([^"]*)" rubric$`, iSawRubric)
+
 }
 
 func stopBlogApp() (err error) {

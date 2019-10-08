@@ -32,15 +32,14 @@ type (
 	}
 )
 
-func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider) *Value {
+func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider) (*Value, error) {
 	return &Value{
 		logger:                      l,
 		popularPublicationsProvider: ppp,
 		recentPublicationsProvider:  rpp,
 		rubricsProvider:             rp,
-	}
+	}, nil
 }
-
 func (v *Value) PopularPublications() []*Publication {
 	publications, err := v.popularPublicationsProvider.PopularPublications()
 	if err != nil {
@@ -48,7 +47,6 @@ func (v *Value) PopularPublications() []*Publication {
 	}
 	return publications
 }
-
 func (v *Value) RecentPublications() []*Publication {
 	publications, err := v.recentPublicationsProvider.RecentPublications()
 	if err != nil {
@@ -56,7 +54,6 @@ func (v *Value) RecentPublications() []*Publication {
 	}
 	return publications
 }
-
 func (v *Value) Rubrics() []*Rubric {
 	rubrics, err := v.rubricsProvider.Rubrics()
 	if err != nil {

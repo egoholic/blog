@@ -26,3 +26,7 @@ Feature: Author previewing
           | slug                       | title                      |
           | interview-with-jack-black  | Interview with Jack Black  |
           | interview-with-peter-thiel | Interview with Piter Thiel |
+
+    Scenario: visitor tries to preview an author that doesn't exist
+        When I visited "jkirk" author page
+        Then I see that page not found

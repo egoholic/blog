@@ -12,9 +12,9 @@ import (
 	"github.com/egoholic/router/params"
 )
 
-var view = template.Must(template.ParseFiles("shared/layout/layout.html", "publication/reading/handler/http/templates/content.html"))
+var view = template.Must(template.ParseFiles("shared/layouts/layout.html", "publication/reading/handler/http/templates/content.html"))
 
-func New(ctx context.Context, db *sql.DB, logger *log.Logger) func(w http.ResponseWriter, r *http.Request, p *params.Params) {
+func New(ctx context.Context, db *sql.DB, logger *log.Logger, notFound func(http.ResponseWriter, *http.Request, *params.Params)) func(w http.ResponseWriter, r *http.Request, p *params.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p *params.Params) {
 		repo := repository.New(ctx, db, logger)
 		param, ok := p.Get(":slug")
@@ -25,8 +25,12 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) func(w http.Respon
 		if !ok {
 			logger.Panicf("ERROR: slug param should be string. (%#v) given\n", slug)
 		}
-		value := reading.New(logger, repo, repo, slug)
-		err := view.Execute(w, value)
+		value, err := reading.New(logger, repo, repo, slug)
+		if err != nil {
+			notFound(w, r, p)
+			return
+		}
+		err = view.Execute(w, value)
 		if err != nil {
 			logger.Panicf("ERROR: %s\n", err.Error())
 		}

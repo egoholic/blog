@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -22,20 +23,20 @@ import (
 	"github.com/egoholic/router/params"
 )
 
-type HandlerFnBuilder func(context.Context, *sql.DB, *log.Logger) func(w http.ResponseWriter, r *http.Request, p *params.Params)
+type HandlerFnBuilder func(context.Context, *sql.DB, *log.Logger, func(http.ResponseWriter, *http.Request, *params.Params)) func(http.ResponseWriter, *http.Request, *params.Params)
 
 var (
-	logger  = log.New(LogFile, "blog", 0)
-	connStr string
-	db      *sql.DB
-	err     error
+	logger       = log.New(LogFile, "blog", 0)
+	connStr      string
+	db           *sql.DB
+	err          error
+	notFoundView = template.Must(template.ParseFiles("shared/layouts/layout.html", "shared/templates/not_found.html"))
 )
 
 type SingleStringParamURLForm struct{}
 
 func (f *SingleStringParamURLForm) CheckAndPopulate(pattern string, chunk string, prms *params.Params) bool {
 	prms.Set(pattern, chunk)
-	logger.Printf("\n\nFORM |> pattern: %s | chunk: %s\n\n", pattern, chunk)
 	return true
 }
 
@@ -94,8 +95,14 @@ func prepare(hb HandlerFnBuilder) handler.HandlerFn {
 		d := 100 * time.Millisecond
 		ctx, cancel := context.WithTimeout(context.Background(), d)
 		defer cancel()
-		h := hb(ctx, db, logger)
-		logger.Println("\n\nhandler executing....\n\n")
+		h := hb(ctx, db, logger, notFound)
 		h(w, r, p)
+	}
+}
+
+func notFound(w http.ResponseWriter, r *http.Request, p *params.Params) {
+	err := notFoundView.Execute(w, nil)
+	if err != nil {
+		panic(err)
 	}
 }

@@ -108,3 +108,46 @@ We use godog (Cucumber for Golang) and Agouti for acceptance tests via GUI.
 You can run tests with:
 
 ```$ ./bin/test-acceptance.sh```
+
+
+### HTML framework
+
+Use ID for unique elements on the page.
+Use class for not unique elements on the page.
+Use ``bhv-`` prefix for setting event handlers and in-browser acceptance-tests.
+Use ``bhv-<entity/datapoint-name>`` to define the entity/datapoint representing context.
+Use ``bhv-<entity/datapoint-name>__<attribute/nested-element name>`` to present attributes and nested content.
+
+Example:
+```
+<article id="bhv-publication">
+  <h1 id="bhv-publication__title">Title</h1>
+	<div id="bhv-publication__content">
+    Some content.
+	</div>
+</article>
+```
+
+Use ``ns-`` prefix for namespacing.
+
+Example:
+```
+<div id="main">
+  <div id="ns-recent" class="micro-list">
+    <h3>Recent Publications</h3>
+    <ol>
+    {{range .RecentPublications}}
+      {{template "publication--li" .}}
+    {{end}}
+    </ol>
+  </div>
+  <div id="ns-top" class="micro-list">
+    <h3>Popular Publications</h3>
+    <ol>
+    {{range .PopularPublications}}
+      {{template "publication--li" .}}
+    {{end}}
+    </ol>
+  </div>
+</div>
+```

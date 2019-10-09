@@ -168,7 +168,14 @@ func iVisitedTheHomePage() (err error) {
 	return
 }
 func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
-	elements, err := page.AllByClass("bhv-recent-publication").Elements()
+	recentSelector := page.FindByID("ns-recent")
+	recents, err := recentSelector.Elements()
+	if err != nil {
+		return err
+	}
+	recents[0].Find()
+	recents[0].GetElements(".bhv-publication__title")
+	elements, err := page.Find("#ns-recent .bhv-publication__title").Elements()
 	if err != nil {
 		return err
 	}

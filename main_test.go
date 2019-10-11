@@ -168,14 +168,12 @@ func iVisitedTheHomePage() (err error) {
 	return
 }
 func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
-	recentSelector := page.FindByID("ns-recent")
-	recents, err := recentSelector.Elements()
-	if err != nil {
-		return err
-	}
-	recents[0].Find()
-	recents[0].GetElements(".bhv-publication__title")
-	elements, err := page.Find("#ns-recent .bhv-publication__title").Elements()
+	recentSelector := page.AllByID("ns-recent")
+	fmt.Printf("\n\n\nselectable-1: %s\n\n\n", recentSelector.String())
+	recentSelectors := recentSelector.AllByClass("bhv-publication__title")
+	fmt.Printf("\n\n\nselectable-2: %s\n\n\n", recentSelectors.String())
+	recentSelectors
+	elements, err := recentSelectors.Elements()
 	if err != nil {
 		return err
 	}
@@ -470,7 +468,6 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
 	s.Step(`^I see that page not found$`, iSeeThatPageNotFound)
 	s.Step(`^I saw "([^"]*)" rubric$`, iSawRubric)
-
 }
 
 func stopBlogApp() (err error) {

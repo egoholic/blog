@@ -33,8 +33,7 @@ var (
 		Output: colors.Colored(os.Stdout),
 		Format: "cucumber",
 	}
-	port = 8000
-	cmd  = exec.Command("go", "run", "targets/web/main.go", "-logpath", "tmp/log/test.log", "-port", strconv.Itoa(port), "-dbname", "stoa_blogging_test_acceptance", "-pidpath", "tmp/pids/web.pid")
+	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "tmp/log/test.log", "-port", strconv.Itoa(Port), "-dbname", "stoa_blogging_test_acceptance", "-pidpath", "tmp/pids/web.pid")
 )
 
 func init() {
@@ -71,7 +70,7 @@ func theBlogHadTheFollowingAuthors(authors *gherkin.DataTable) error {
 	return InsertList(authorsToInsert)
 }
 func iVisitedAuthorPage(login string) error {
-	expectedURL := fmt.Sprintf("http://localhost:%d/a/%s", port, login)
+	expectedURL := fmt.Sprintf("http://localhost:%d/a/%s", Port, login)
 	err := page.Navigate(expectedURL)
 	if err != nil {
 		return err
@@ -138,7 +137,7 @@ func blogHadTheFollowingPublications(publications *gherkin.DataTable) error {
 }
 func iVisitedTheHomePage() (err error) {
 	rubricPreviewingRepo.New(context.TODO(), DB, logger)
-	expected := fmt.Sprintf("http://localhost:%d/", port)
+	expected := fmt.Sprintf("http://localhost:%d/", Port)
 	err = page.Navigate(expected)
 	if err != nil {
 		return
@@ -168,11 +167,16 @@ func iVisitedTheHomePage() (err error) {
 	return
 }
 func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
-	recentSelector := page.AllByID("ns-recent")
-	fmt.Printf("\n\n\nselectable-1: %s\n\n\n", recentSelector.String())
-	recentSelectors := recentSelector.AllByClass("bhv-publication__title")
+	groupSelector := page.FindByID("ns-recent")
+	fmt.Printf("\n\n\nselectable-1: %s\n\n\n", groupSelector.String())
+	recentSelectors := page.All("#ns-recent .bhv-publication__title")
 	fmt.Printf("\n\n\nselectable-2: %s\n\n\n", recentSelectors.String())
-	recentSelectors
+
+	html, err := page.HTML()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n\nhtml: %s\n\n", html)
 	elements, err := recentSelectors.Elements()
 	if err != nil {
 		return err
@@ -185,19 +189,15 @@ func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
 	}
 	for i, row := range rows {
 		elem := elements[i]
-		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
+		href, err := elem.GetAttribute("href")
 		if err != nil {
 			return err
 		}
-		href, err := aElem.GetAttribute("href")
-		if err != nil {
-			return err
-		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
-		linkText, err := aElem.GetText()
+		linkText, err := elem.GetText()
 		if err != nil {
 			return err
 		}
@@ -229,7 +229,7 @@ func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) er
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -259,7 +259,7 @@ func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/r/%s", port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/r/%s", Port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -275,7 +275,7 @@ func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	return nil
 }
 func iVisitedRubricPage(slug string) error {
-	expectedURL := fmt.Sprintf("http://localhost:%d/r/%s", port, slug)
+	expectedURL := fmt.Sprintf("http://localhost:%d/r/%s", Port, slug)
 	err = page.Navigate(expectedURL)
 	if err != nil {
 		return err
@@ -325,7 +325,7 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 		if err != nil {
 			return err
 		}
-		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", port, row.Cells[0].Value)
+		expectedHref := fmt.Sprintf("http://localhost:%d/p/%s", Port, row.Cells[0].Value)
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
@@ -341,7 +341,7 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 	return nil
 }
 func iVisitedPublicationPage(slug string) error {
-	expectedURL := fmt.Sprintf("http://localhost:%d/p/%s", port, slug)
+	expectedURL := fmt.Sprintf("http://localhost:%d/p/%s", Port, slug)
 	err := page.Navigate(expectedURL)
 	if err != nil {
 		return err

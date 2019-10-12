@@ -167,16 +167,7 @@ func iVisitedTheHomePage() (err error) {
 	return
 }
 func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
-	groupSelector := page.FindByID("ns-recent")
-	fmt.Printf("\n\n\nselectable-1: %s\n\n\n", groupSelector.String())
 	recentSelectors := page.All("#ns-recent .bhv-publication__title")
-	fmt.Printf("\n\n\nselectable-2: %s\n\n\n", recentSelectors.String())
-
-	html, err := page.HTML()
-	if err != nil {
-		return err
-	}
-	fmt.Printf("\n\nhtml: %s\n\n", html)
 	elements, err := recentSelectors.Elements()
 	if err != nil {
 		return err
@@ -209,7 +200,8 @@ func iSawTheFollowingRecentPublications(publications *gherkin.DataTable) error {
 	return nil
 }
 func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) error {
-	elements, err := page.AllByClass("bhv-popular-publication").Elements()
+	popularSelectors := page.All("#ns-popular .bhv-publication__title")
+	elements, err := popularSelectors.Elements()
 	if err != nil {
 		return err
 	}
@@ -221,11 +213,7 @@ func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) er
 	}
 	for i, row := range rows {
 		elem := elements[i]
-		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
-		if err != nil {
-			return err
-		}
-		href, err := aElem.GetAttribute("href")
+		href, err := elem.GetAttribute("href")
 		if err != nil {
 			return err
 		}
@@ -233,7 +221,7 @@ func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) er
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
-		linkText, err := aElem.GetText()
+		linkText, err := elem.GetText()
 		if err != nil {
 			return err
 		}
@@ -245,17 +233,20 @@ func iSawTheFollowingMostPopularPublications(publications *gherkin.DataTable) er
 	return nil
 }
 func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
-	elements, err := page.AllByClass("bhv-rubric").Elements()
+	rubricSelectors := page.All(".bhv-rubric__title")
+	elements, err := rubricSelectors.Elements()
 	if err != nil {
 		return err
 	}
+	rows := rubrics.Rows[1:]
+	ln := len(elements)
+	expectedLn := len(rows)
+	if ln != expectedLn {
+		return fmt.Errorf("expected: '%d' rubrics, got: '%d'", expectedLn, ln)
+	}
 	for i, row := range rubrics.Rows[1:] {
 		elem := elements[i]
-		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
-		if err != nil {
-			return err
-		}
-		href, err := aElem.GetAttribute("href")
+		href, err := elem.GetAttribute("href")
 		if err != nil {
 			return err
 		}
@@ -263,7 +254,7 @@ func iSawTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
-		linkText, err := aElem.GetText()
+		linkText, err := elem.GetText()
 		if err != nil {
 			return err
 		}

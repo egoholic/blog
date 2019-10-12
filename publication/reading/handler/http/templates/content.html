@@ -1,18 +1,15 @@
 {{define "content"}}
-<div id="main">
-  <article class="publication">
+<main>
+  <article>
     <h1 id="bhv-publication__title">{{.Publication.Title}}</h1>
     <div id="bhv-publication__content">
       {{.Publication.Content}}
     </div>
-    authors:
-    <ol class=".authors-list">
-    {{range .Authors}}
-      <li class="author-info">
-        <a href="/a/{{.Login}}"><span class="author-name">{{.FullName}}</span></a>
-        {{.Bio}}
-      </li>
-    {{end}}
-    </ol>
   </article>
-</div>{{end}}
+  <h3>Authors</h3>
+  <ol>
+  {{range .Authors}}
+    {{template "author--li" .}}
+  {{end}}
+  </ol>
+</main>{{end}}

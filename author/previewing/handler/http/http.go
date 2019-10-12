@@ -12,7 +12,7 @@ import (
 	"github.com/egoholic/router/params"
 )
 
-var view = template.Must(template.ParseFiles("shared/layouts/layout.html", "author/previewing/handler/http/templates/content.html"))
+var view = template.Must(template.ParseFiles("shared/layouts/layout.html", "shared/views/publication/li.html", "author/previewing/handler/http/templates/content.html"))
 
 func New(ctx context.Context, db *sql.DB, logger *log.Logger, notFound func(http.ResponseWriter, *http.Request, *params.Params)) func(w http.ResponseWriter, r *http.Request, p *params.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p *params.Params) {

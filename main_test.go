@@ -21,7 +21,6 @@ import (
 	. "github.com/egoholic/blog/lib/store/seed"
 	rubricPreviewingRepo "github.com/egoholic/blog/rubric/previewing/repository/postgresql"
 	"github.com/sclevine/agouti"
-	"github.com/sclevine/agouti/api"
 )
 
 var (
@@ -281,12 +280,13 @@ func iVisitedRubricPage(slug string) error {
 	return nil
 }
 func iSawRubric(title string) error {
-	elems, err := page.FindByID("bhv-rubric-title").Elements()
+	elems, err := page.Find("#bhv-rubric__title").Elements()
 	if err != nil {
 		return err
 	}
-	rubric := elems[0]
-	t, err := rubric.GetText()
+	elem := elems[0]
+
+	t, err := elem.GetText()
 	if err != nil {
 		return err
 	}
@@ -296,7 +296,8 @@ func iSawRubric(title string) error {
 	return nil
 }
 func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
-	elements, err := page.AllByClass("bhv-publication-preview").Elements()
+	selector := page.All(".bhv-publication__title")
+	elements, err := selector.Elements()
 	if err != nil {
 		return err
 	}
@@ -308,11 +309,7 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 	}
 	for i, row := range rows {
 		elem := elements[i]
-		aElem, err := elem.GetElement(api.Selector{Using: "css selector", Value: "a"})
-		if err != nil {
-			return err
-		}
-		href, err := aElem.GetAttribute("href")
+		href, err := elem.GetAttribute("href")
 		if err != nil {
 			return err
 		}
@@ -320,7 +317,7 @@ func iSawTheFollowingPublications(publications *gherkin.DataTable) error {
 		if href != expectedHref {
 			return fmt.Errorf("Expected 'href' attribute to be equal: '%s', got: '%s'", expectedHref, href)
 		}
-		linkText, err := aElem.GetText()
+		linkText, err := elem.GetText()
 		if err != nil {
 			return err
 		}

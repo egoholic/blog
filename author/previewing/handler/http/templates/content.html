@@ -5,11 +5,9 @@
     {{.Author.Bio}}
   </article>
   <h3>Publications</h3>
-  <ol class=".publications-list">
+  <ol>
     {{range .Publications}}
-    <li class="bhv-publication-preview">
-      <a href="/p/{{.Slug}}" class="bhv-publication__title">{{.Title}}</a>
-    </li>
+      {{template "publication--li" .}}
     {{end}}
   </ol>
 </div>{{end}}

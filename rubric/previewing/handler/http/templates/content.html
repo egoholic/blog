@@ -1,15 +1,13 @@
 {{define "content"}}
-<div id="main">
-  <article class="rubric">
-    <h1 id="bhv-rubric-title">{{.Rubric.Title}}</h1>
-    {{.Rubric.Description}}
+<main>
+  <article>
+    <h1 id="bhv-rubric__title">{{.Rubric.Title}}</h1>
+    {{.Rubric.Description}}]
   </article>
   <h3>Publications</h3>
-  <ol class=".publications-list">
+  <ol>
     {{range .Publications}}
-    <li class="publication-preview bhv-publication-preview">
-      <a href="/p/{{.Slug}}"><span class="publication-title">{{.Title}}</span></a>
-    </li>
+      {{template "publication--li" .}}
     {{end}}
   </ol>
-</div>{{end}}
+</main>{{end}}

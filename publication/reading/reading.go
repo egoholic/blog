@@ -1,6 +1,10 @@
 package reading
 
-import "log"
+import (
+	"log"
+
+	"github.com/egoholic/blog/meta"
+)
 
 type (
 	Author struct {
@@ -9,17 +13,20 @@ type (
 		Bio      string
 	}
 	Publication struct {
-		Slug       string
-		Title      string
-		Content    string
-		CreatedAt  string
-		Popularity int
+		Slug            string
+		Title           string
+		Content         string
+		CreatedAt       string
+		Popularity      int
+		MetaKeywords    string
+		MetaDescription string
 	}
 	Value struct {
 		logger          *log.Logger
 		publication     *Publication
 		authorsProvider AuthorsProvider
 		slug            string
+		Meta            *meta.Meta
 	}
 	PublicationProvider interface {
 		PublicationBySlug(string) (*Publication, error)
@@ -39,6 +46,11 @@ func New(l *log.Logger, pp PublicationProvider, ap AuthorsProvider, s string) (*
 		publication:     publication,
 		authorsProvider: ap,
 		slug:            s,
+		Meta: &meta.Meta{
+			Title:           publication.Title,
+			MetaDescription: publication.MetaDescription,
+			MetaKeywords:    publication.MetaKeywords,
+		},
 	}, nil
 }
 func (v *Value) Publication() *Publication {

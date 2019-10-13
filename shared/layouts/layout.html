@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>BLOG</title>
+    {{with .Meta}}
+      <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+      <meta name="description" content="{{.MetaDescription}}">
+      <meta name="keywords" content="{{.MetaKeywords}}">
+      <title>{{.Title}}</title>
+    {{end}}
     <style>
 html, body {
   margin: 0;

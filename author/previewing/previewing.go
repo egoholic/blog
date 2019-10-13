@@ -1,6 +1,11 @@
 package previewing
 
-import "log"
+import (
+	"fmt"
+	"log"
+
+	"github.com/egoholic/blog/meta"
+)
 
 type (
 	Author struct {
@@ -15,10 +20,10 @@ type (
 		Popularity int
 	}
 	Value struct {
-		logger *log.Logger
-		author *Author
-		login  string
-
+		logger               *log.Logger
+		author               *Author
+		login                string
+		Meta                 *meta.Meta
 		publicationsProvider PublicationsProvider
 	}
 	AuthorProvider interface {
@@ -31,14 +36,20 @@ type (
 
 func New(l *log.Logger, ap AuthorProvider, pp PublicationsProvider, login string) (*Value, error) {
 	author, err := ap.AuthorByLogin(login)
+	title := fmt.Sprintf("%s author's page", author.FullName)
 	if err != nil {
 		return nil, err
 	}
 	return &Value{
-		logger:               l,
-		author:               author,
+		logger: l,
+		author: author,
+		login:  login,
+		Meta: &meta.Meta{
+			Title:           title,
+			MetaKeywords:    "author, publications",
+			MetaDescription: title,
+		},
 		publicationsProvider: pp,
-		login:                login,
 	}, nil
 }
 func (v *Value) Publications() []*Publication {

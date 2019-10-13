@@ -25,7 +25,9 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
 
 var rubricQuery = `SELECT slug,
 											  	title,
-												  description
+													description,
+													meta_keywords,
+													meta_description
 								   FROM rubrics
 								   WHERE slug = $1
 								   LIMIT 1;`
@@ -33,7 +35,7 @@ var rubricQuery = `SELECT slug,
 func (r *Repository) RubricBySlug(s string) (*previewing.Rubric, error) {
 	var rubric previewing.Rubric
 	row := r.db.QueryRowContext(r.ctx, rubricQuery, s)
-	err := row.Scan(&rubric.Slug, &rubric.Title, &rubric.Description)
+	err := row.Scan(&rubric.Slug, &rubric.Title, &rubric.Description, &rubric.MetaKeywords, &rubric.MetaDescription)
 	return &rubric, err
 }
 

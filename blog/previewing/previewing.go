@@ -2,6 +2,8 @@ package previewing
 
 import (
 	"log"
+
+	"github.com/egoholic/blog/meta"
 )
 
 type (
@@ -20,6 +22,7 @@ type (
 		popularPublicationsProvider PopularPublicationsProvider
 		recentPublicationsProvider  RecentPublicationsProvider
 		rubricsProvider             RubricsProvider
+		Meta                        *meta.Meta
 	}
 	RecentPublicationsProvider interface {
 		RecentPublications() ([]*Publication, error)
@@ -38,6 +41,11 @@ func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsP
 		popularPublicationsProvider: ppp,
 		recentPublicationsProvider:  rpp,
 		rubricsProvider:             rp,
+		Meta: &meta.Meta{
+			Title:           "",
+			MetaKeywords:    "",
+			MetaDescription: "",
+		},
 	}, nil
 }
 func (v *Value) PopularPublications() []*Publication {

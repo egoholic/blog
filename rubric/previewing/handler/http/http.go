@@ -27,12 +27,13 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger, notFound func(http
 		}
 		value, err := previewing.New(logger, repo, repo, slug)
 		if err != nil {
+			logger.Printf("ERROR: %s", err.Error())
 			notFound(w, r, p)
 			return
 		}
 		err = view.Execute(w, value)
 		if err != nil {
-			logger.Panicf("ERROR: %s\n", err.Error())
+			logger.Panicf("ERROR: %s", err.Error())
 		}
 		w.Header().Set("Content-Type", "text/html")
 	}

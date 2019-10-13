@@ -1,12 +1,18 @@
 package previewing
 
-import "log"
+import (
+	"log"
+
+	"github.com/egoholic/blog/meta"
+)
 
 type (
 	Rubric struct {
-		Slug        string
-		Title       string
-		Description string
+		Slug            string
+		Title           string
+		Description     string
+		MetaKeywords    string
+		MetaDescription string
 	}
 	Publication struct {
 		Slug       string
@@ -19,6 +25,7 @@ type (
 		rubric               *Rubric
 		publicationsProvider PublicationsProvider
 		slug                 string
+		Meta                 *meta.Meta
 	}
 	RubricProvider interface {
 		RubricBySlug(string) (*Rubric, error)
@@ -38,6 +45,11 @@ func New(l *log.Logger, rp RubricProvider, pp PublicationsProvider, slug string)
 		rubric:               rubric,
 		publicationsProvider: pp,
 		slug:                 slug,
+		Meta: &meta.Meta{
+			Title:           rubric.Title,
+			MetaKeywords:    rubric.MetaKeywords,
+			MetaDescription: rubric.MetaDescription,
+		},
 	}, nil
 }
 

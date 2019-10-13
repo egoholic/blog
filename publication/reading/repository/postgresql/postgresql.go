@@ -20,7 +20,9 @@ var (
 															title,
 															content,
 															created_at,
-															popularity
+															popularity,
+															meta_keywords,
+															meta_description
 											FROM publications
 											WHERE slug = $1;`
 
@@ -44,7 +46,7 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
 func (r *Repository) PublicationBySlug(s string) (*reading.Publication, error) {
 	var p reading.Publication
 	row := r.db.QueryRowContext(r.ctx, publicationQuery, s)
-	err := row.Scan(&p.Slug, &p.Title, &p.Content, &p.CreatedAt, &p.Popularity)
+	err := row.Scan(&p.Slug, &p.Title, &p.Content, &p.CreatedAt, &p.Popularity, &p.MetaKeywords, &p.MetaDescription)
 	return &p, err
 }
 

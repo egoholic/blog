@@ -27,6 +27,7 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger, notFound func(http
 		}
 		value, err := previewing.New(logger, repo, repo, login)
 		if err != nil {
+			logger.Printf("ERROR: %s", err.Error())
 			notFound(w, r, p)
 			return
 		}

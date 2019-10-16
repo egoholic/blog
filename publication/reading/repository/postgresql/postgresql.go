@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/egoholic/blog/publication/reading"
@@ -16,6 +17,12 @@ type Repository struct {
 }
 
 var (
+	blogQuery = `SELECT title
+							 FROM (SELECT domain,
+														title
+										 FROM blogs
+										 WHERE domain = $1
+										 LIMIT 1) AS b;`
 	publicationQuery = `SELECT  slug,
 															title,
 															content,
@@ -65,4 +72,11 @@ func (r *Repository) AuthorsOf(s string) (authors []*reading.Author, err error) 
 		authors = append(authors, &a)
 	}
 	return
+}
+func (r *Repository) BlogByDomain(domain string) (*reading.Blog, error) {
+	var blog reading.Blog
+	row := r.db.QueryRowContext(r.ctx, blogQuery, domain)
+	err := row.Scan(&blog.Title)
+	fmt.Printf("publication-reading repo err: %s", err.Error())
+	return &blog, err
 }

@@ -18,7 +18,7 @@ var view = template.Must(template.ParseFiles("shared/layouts/layout.html", "shar
 func New(ctx context.Context, db *sql.DB, logger *log.Logger, not_found func(http.ResponseWriter, *http.Request, *params.Params)) func(w http.ResponseWriter, r *http.Request, p *params.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p *params.Params) {
 		repo := repository.New(ctx, db, logger)
-		value, err := previewing.New(logger, config.Domain, repo, repo, repo, repo)
+		value, err := previewing.New(logger, repo, repo, repo, repo, config.Domain)
 		if err != nil {
 			logger.Printf("ERROR: %s", err.Error())
 			not_found(w, r, p)

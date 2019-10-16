@@ -42,6 +42,42 @@ func init() {
 		panic(err)
 	}
 }
+
+func thereIsABlog(blog *gherkin.DataTable) error {
+	header := blog.Rows[0].Cells
+	row := blog.Rows[1]
+	attrs := map[string]string{}
+	values := row.Cells
+	for attrIdx, attrName := range header {
+		attrs[attrName.Value] = values[attrIdx].Value
+	}
+	fmt.Printf("\n\n\n%#v\n\n\n", attrs)
+	return Insert(Must(NewBlog(attrs)))
+}
+func iSeeTheBlog(blog *gherkin.DataTable) error {
+	html, err := page.HTML()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n\nHTML:\n%s\n\n\n", html)
+	title, err := page.Find("#bhv-blog__title").Text()
+	if err != nil {
+		return err
+	}
+	expectedTitle := blog.Rows[1].Cells[0].Value
+	if title != expectedTitle {
+		return fmt.Errorf("Expected to find blog title: '%s', got: '%s'", title, expectedTitle)
+	}
+	description, err := page.Find("#bhv-blog__description").Text()
+	if err != nil {
+		return err
+	}
+	expectedDescription := blog.Rows[1].Cells[1].Value
+	if description != expectedDescription {
+		return fmt.Errorf("Expected to find blog description: '%s', got: '%s'", description, expectedDescription)
+	}
+	return nil
+}
 func blogHadTheFollowingRubrics(rubrics *gherkin.DataTable) error {
 	rubricsToInsert := make([]*Tuple, len(rubrics.Rows)-1)
 	header := rubrics.Rows[0].Cells
@@ -147,21 +183,6 @@ func iVisitedTheHomePage() (err error) {
 	}
 	if url != expected {
 		return fmt.Errorf("expected: `%s`, got: `%s`", expected, url)
-	}
-	selector := page.Find(".bhv-main-title")
-	text, err := selector.Text()
-	if err != nil {
-		return err
-	}
-	if text != "BLOG" {
-		return fmt.Errorf("expected blog title to be: `%s` got: `%s`\n", "BLOG", text)
-	}
-	cnt, err := selector.Count()
-	if err != nil {
-		return
-	}
-	if cnt != 1 {
-		return fmt.Errorf("expected to find 1, got: %d", cnt)
 	}
 	return
 }
@@ -415,7 +436,7 @@ func FeatureContext(s *godog.Suite) {
 		}
 	})
 	s.BeforeScenario(func(interface{}) {
-		err = Truncate("accounts", "rubrics", "publications", "publication_authors")
+		err = Truncate("blogs", "accounts", "rubrics", "publications", "publication_authors")
 		if err != nil {
 			logger.Printf("Error: Can't clean up DB: %s\n", err.Error())
 		}
@@ -456,6 +477,8 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I saw the following publications:$`, iSawTheFollowingPublications)
 	s.Step(`^I see that page not found$`, iSeeThatPageNotFound)
 	s.Step(`^I saw "([^"]*)" rubric$`, iSawRubric)
+	s.Step(`^there is a blog:$`, thereIsABlog)
+	s.Step(`^I see the blog:$`, iSeeTheBlog)
 }
 
 func stopBlogApp() (err error) {

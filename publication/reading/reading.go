@@ -7,6 +7,9 @@ import (
 )
 
 type (
+	Blog struct {
+		Title string
+	}
 	Author struct {
 		Login    string
 		FullName string
@@ -24,6 +27,7 @@ type (
 	Value struct {
 		logger          *log.Logger
 		publication     *Publication
+		blog            *Blog
 		authorsProvider AuthorsProvider
 		slug            string
 		Meta            *meta.Meta
@@ -31,21 +35,29 @@ type (
 	PublicationProvider interface {
 		PublicationBySlug(string) (*Publication, error)
 	}
+	BlogProvider interface {
+		BlogByDomain(string) (*Blog, error)
+	}
 	AuthorsProvider interface {
 		AuthorsOf(string) ([]*Author, error)
 	}
 )
 
-func New(l *log.Logger, pp PublicationProvider, ap AuthorsProvider, s string) (*Value, error) {
-	publication, err := pp.PublicationBySlug(s)
+func New(l *log.Logger, pp PublicationProvider, bp BlogProvider, ap AuthorsProvider, slug, domain string) (*Value, error) {
+	publication, err := pp.PublicationBySlug(slug)
+	if err != nil {
+		return nil, err
+	}
+	blog, err := bp.BlogByDomain(domain)
 	if err != nil {
 		return nil, err
 	}
 	return &Value{
 		logger:          l,
 		publication:     publication,
+		blog:            blog,
 		authorsProvider: ap,
-		slug:            s,
+		slug:            slug,
 		Meta: &meta.Meta{
 			Title:           publication.Title,
 			MetaDescription: publication.MetaDescription,
@@ -59,7 +71,10 @@ func (v *Value) Publication() *Publication {
 func (v *Value) Authors() []*Author {
 	authors, err := v.authorsProvider.AuthorsOf(v.slug)
 	if err != nil {
-		v.logger.Printf("ERROR: %s\n", err.Error())
+		v.logger.Printf("ERROR-publication-reading: %s\n", err.Error())
 	}
 	return authors
+}
+func (v *Value) Blog() *Blog {
+	return v.blog
 }

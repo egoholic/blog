@@ -44,7 +44,7 @@ type (
 	}
 )
 
-func New(l *log.Logger, domain string, bp BlogProvider, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider) (*Value, error) {
+func New(l *log.Logger, bp BlogProvider, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider, domain string) (*Value, error) {
 	blog, err := bp.BlogByDomain(domain)
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/egoholic/blog/author/previewing"
@@ -16,6 +17,10 @@ type Repository struct {
 }
 
 var (
+	blogQuery = `SELECT title
+							 FROM (SELECT domain,
+														title
+										 FROM blogs WHERE domain = $1 LIMIT 1) AS b;`
 	authorQuery = `SELECT a.first_name || ' ' || a.last_name AS full_name,
 												a.bio                              AS bio,
 												a.login                            AS login
@@ -40,6 +45,16 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger) *Repository {
 		db:     db,
 		logger: logger,
 	}
+}
+
+func (r *Repository) BlogByDomain(domain string) (*previewing.Blog, error) {
+	var b previewing.Blog
+	row := r.db.QueryRowContext(r.ctx, blogQuery, domain)
+	err := row.Scan(&b.Title)
+	if err != nil {
+		fmt.Printf("\n\nauthor-previewing error: %s", err.Error())
+	}
+	return &b, err
 }
 
 func (r *Repository) AuthorByLogin(l string) (*previewing.Author, error) {

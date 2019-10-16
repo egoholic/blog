@@ -9,6 +9,7 @@ import (
 
 	"github.com/egoholic/blog/author/previewing"
 	repository "github.com/egoholic/blog/author/previewing/repository/postgresql"
+	"github.com/egoholic/blog/config"
 	"github.com/egoholic/router/params"
 )
 
@@ -25,7 +26,7 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger, notFound func(http
 		if !ok {
 			logger.Panicf("ERROR: login param should be string. (%#v) given\n", login)
 		}
-		value, err := previewing.New(logger, repo, repo, login)
+		value, err := previewing.New(logger, repo, repo, repo, login, config.Domain)
 		if err != nil {
 			logger.Printf("ERROR: %s", err.Error())
 			notFound(w, r, p)

@@ -4,7 +4,10 @@ Feature: Blog previewing
     In order to investigate recent and most popular content
 
     Scenario: visitor previews blog
-        Given the blog had the following rubrics:
+        Given there is a blog:
+          | domain        | title       | keywords                  | description                                         |
+          | wearestoa.com | We Are Stoa | stoa, business, marketing | Everything on how to build and scale your business. |
+        And the blog had the following rubrics:
           | slug       | meta_keywords          | meta_description                             | title      | description                                                          |
           | interviews | interview, VIP, celebs | Interviews with known persons.               | Interviews | Know what best practitioners and achievers think about the industry. |
           | how-tos    | how to                 | One-bite sized instructions to achieve more. | How Tos    | One-bite sized instructions to achieve more.                         |
@@ -23,7 +26,10 @@ Feature: Blog previewing
           | landing-pages-styles-market  | release, landing, styles         | Landing pages styles market released!                            | Landing pages styles market released!                            | Now designers can make money togather with Stoa! | 2019-11-09 12:04:17 | releases    | 102        |
           | onboarding-and-outboarding   | release, onboarding, outboarding | We'are happy to present new onboarding and outboarding features! | We are happy to present new onboarding and outboarding features! | Onboarding and outbording are out!               | 2019-11-21 19:00:59 | releases    | 48         |
         When I visited the home page
-        Then I saw the following recent publications:
+        Then I see the blog:
+          | title       | description                                         |
+          | We Are Stoa | Everything on how to build and scale your business. |
+        And I saw the following recent publications:
           | slug                         | title                                                            |
           | onboarding-and-outboarding   | We are happy to present new onboarding and outboarding features! |
           | landing-pages-styles-market  | Landing pages styles market released!                            |

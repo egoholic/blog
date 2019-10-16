@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/egoholic/blog/config"
 	"github.com/egoholic/blog/publication/reading"
 	repository "github.com/egoholic/blog/publication/reading/repository/postgresql"
 	"github.com/egoholic/router/params"
@@ -25,7 +26,7 @@ func New(ctx context.Context, db *sql.DB, logger *log.Logger, notFound func(http
 		if !ok {
 			logger.Panicf("ERROR: slug param should be string. (%#v) given\n", slug)
 		}
-		value, err := reading.New(logger, repo, repo, slug)
+		value, err := reading.New(logger, repo, repo, repo, slug, config.Domain)
 		if err != nil {
 			logger.Printf("ERROR: %s", err.Error())
 			notFound(w, r, p)

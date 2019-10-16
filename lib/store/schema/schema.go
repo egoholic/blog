@@ -26,7 +26,19 @@ func Apply(db *sql.DB) (err error) {
 		return
 	}
 
-	query := `CREATE TABLE rubrics (
+	query := `CREATE TABLE blogs (
+		domain           varchar(255) PRIMARY KEY,
+		keywords    text NOT NULL,
+		description text NOT NULL,
+		title            varchar(255) NOT NULL
+	);`
+	_, err = db.Exec(query)
+	if err != nil {
+		return
+	}
+	fmt.Println("-- table `blogs` has been created")
+
+	query = `CREATE TABLE rubrics (
 		  slug             varchar(255) PRIMARY KEY,
 			meta_keywords    text NOT NULL,
 	    meta_description text NOT NULL,

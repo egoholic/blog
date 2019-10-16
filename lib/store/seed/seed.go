@@ -17,6 +17,8 @@ type Tuple struct {
 
 func FieldsFor(tn string) []string {
 	switch tn {
+	case "blogs":
+		return BlogFieldNames
 	case "accounts":
 		return AccountFieldNames
 	case "rubrics":
@@ -36,6 +38,7 @@ var (
 	rubricSlugs      []string
 	publicationSlugs []string
 
+	BlogFieldNames              = []string{"domain", "title", "keywords", "description"}
 	AccountFieldNames           = []string{"login", "first_name", "last_name", "bio"}
 	RubricFieldNames            = []string{"slug", "meta_keywords", "meta_description", "title", "description"}
 	PublicationFieldNames       = []string{"slug", "meta_keywords", "meta_description", "title", "content", "created_at", "rubric_slug", "popularity"}
@@ -205,8 +208,46 @@ func MetaKeywords() string {
 	}
 	return strings.Join(acc, ", ")
 }
+func BlogKeywords() string {
+	return MetaKeywords()
+}
+
+var blog_domains = []string{"example.com", "wearestoa.com", "itrampage.com"}
+
+func BlogDomain() string {
+	l := len(blog_domains)
+	return blog_domains[Random.Intn(l-1)]
+}
+
+var blog_titles = []string{"Example Title", "We Are Stoa", "IT Rampage"}
+
+func BlogTitle() string {
+	l := len(blog_titles)
+	return blog_titles[Random.Intn(l-1)]
+}
+func BlogDescription() string {
+	return Paragraphs(3)
+}
 func MetaDescription() string {
 	return Sentence()
+}
+
+func NewBlog(fields map[string]string) (*Tuple, error) {
+	if _, ok := fields["domain"]; !ok {
+		fields["domain"] = BlogDomain()
+	}
+	if _, ok := fields["title"]; !ok {
+		fields["title"] = BlogTitle()
+	}
+	fields["title"] = clean(fields["title"])
+	if _, ok := fields["keywords"]; !ok {
+		fields["keywords"] = BlogKeywords()
+	}
+	if _, ok := fields["description"]; !ok {
+		fields["description"] = BlogDescription()
+	}
+	fields["description"] = clean(fields["description"])
+	return new("blogs", fields)
 }
 func NewAccount(fields map[string]string) (*Tuple, error) {
 	if _, ok := fields["first_name"]; !ok {
@@ -392,8 +433,15 @@ func Must(t *Tuple, err error) *Tuple {
 	return t
 }
 func Seed() {
-	Truncate("accounts", "rubrics", "publications", "publication_authors")
-	err := InsertMany(Must(NewAccount(map[string]string{})), Must(NewAccount(map[string]string{})), Must(NewAccount(map[string]string{})))
+	Truncate("blogs", "accounts", "rubrics", "publications", "publication_authors")
+	blogAtts := map[string]string{}
+	blogAtts["domain"] = "wearestoa.com"
+	blogAtts["title"] = "We Are Stoa"
+	err := Insert(Must(NewBlog(blogAtts)))
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+	}
+	err = InsertMany(Must(NewAccount(map[string]string{})), Must(NewAccount(map[string]string{})), Must(NewAccount(map[string]string{})))
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 	}

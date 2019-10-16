@@ -13,6 +13,7 @@ import (
 
 	authorPreviewing "github.com/egoholic/blog/author/previewing/handler/http"
 	blogPreviewing "github.com/egoholic/blog/blog/previewing/handler/http"
+	"github.com/egoholic/blog/config"
 	publicationReading "github.com/egoholic/blog/publication/reading/handler/http"
 	rubricPreviewing "github.com/egoholic/blog/rubric/previewing/handler/http"
 
@@ -41,6 +42,10 @@ func (f *SingleStringParamURLForm) CheckAndPopulate(pattern string, chunk string
 }
 
 func main() {
+	// TODO: separate configs for different executables
+	if config.Domain == "" {
+		panic("No Blog Domain provided!")
+	}
 	logger.Println("server starting...")
 	db, err = sql.Open("postgres", DBConnectionString)
 	if err != nil {

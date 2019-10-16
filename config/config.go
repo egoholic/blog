@@ -25,6 +25,7 @@ var (
 	DBConnectionString          string
 	DBConnectionStringWithoutDB string
 
+	Domain      string
 	Port        int
 	dbHost      string
 	dbPort      int
@@ -47,7 +48,12 @@ func init() {
 	defaults["port"] = "3000"
 	defaults["logpath"] = "stdout"
 	defaults["pidpath"] = "tmp/pids/web.pid"
+	defaults["domain"] = ""
 	config := cfg.Config(defaults)
+	Domain, err = config.StringArg("Blog Domain", "Blog's domain which executable handles requests for.", "domain")
+	if err != nil {
+		panic(err)
+	}
 	Port, err = config.IntArg("Web server port", "The port which web server listens to, like: 3000.", "port")
 	if err != nil {
 		panic(err)

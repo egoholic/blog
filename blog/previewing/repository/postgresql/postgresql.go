@@ -16,6 +16,16 @@ type Repository struct {
 }
 
 var (
+	blogQuery = `SELECT title,
+											keywords,
+											description
+							 FROM (SELECT domain,
+														title,
+														keywords,
+														description
+										 FROM blogs
+										 WHERE domain = $1
+										 LIMIT 1) AS b;`
 	recentPublicationsQuery = `SELECT slug,
 	                                  title,
 	                                  created_at,
@@ -86,4 +96,11 @@ func (r *Repository) Rubrics() (rubrics []*previewing.Rubric, err error) {
 		rubrics = append(rubrics, &r)
 	}
 	return
+}
+
+func (r *Repository) BlogByDomain(domain string) (*previewing.Blog, error) {
+	var b previewing.Blog
+	row := r.db.QueryRowContext(r.ctx, blogQuery, domain)
+	err := row.Scan(&b.Title, &b.Keywords, &b.Description)
+	return &b, err
 }

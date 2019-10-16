@@ -1,5 +1,8 @@
 {{define "content"}}
-<div id="main">
+<main>
+  <article>
+    {{.Blog.Description}}
+  </article>
   <div id="ns-recent" class="micro-list">
     <h3>Recent Publications</h3>
     <ol>
@@ -16,12 +19,12 @@
     {{end}}
     </ol>
   </div>
-    <div class="micro-list">
-      <h3>Rubrics</h3>
-      <ol>
-        {{range .Rubrics}}
-          {{template "rubric--li" .}}
-        {{end}}
-      </ol>
-    </div>
+  <div class="micro-list">
+    <h3>Rubrics</h3>
+    <ol>
+      {{range .Rubrics}}
+        {{template "rubric--li" .}}
+      {{end}}
+    </ol>
+  </div>
 </main>{{end}}

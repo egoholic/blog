@@ -32,7 +32,7 @@ var (
 		Output: colors.Colored(os.Stdout),
 		Format: "cucumber",
 	}
-	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "tmp/log/test.log", "-port", strconv.Itoa(Port), "-dbname", "stoa_blogging_test_acceptance", "-pidpath", "tmp/pids/web.pid")
+	cmd = exec.Command("go", "run", "targets/web/main.go", "-logpath", "tmp/log/test.log", "-port", strconv.Itoa(Port), "-dbname", "stoa_blogging_test_acceptance", "-pidpath", "tmp/pids/web.pid", "-domain", "localhost")
 )
 
 func init() {

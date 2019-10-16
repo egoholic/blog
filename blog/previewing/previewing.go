@@ -7,6 +7,11 @@ import (
 )
 
 type (
+	Blog struct {
+		Title       string
+		Keywords    string
+		Description string
+	}
 	Rubric struct {
 		Slug  string
 		Title string
@@ -19,10 +24,14 @@ type (
 	}
 	Value struct {
 		logger                      *log.Logger
+		blog                        *Blog
 		popularPublicationsProvider PopularPublicationsProvider
 		recentPublicationsProvider  RecentPublicationsProvider
 		rubricsProvider             RubricsProvider
 		Meta                        *meta.Meta
+	}
+	BlogProvider interface {
+		BlogByDomain(string) (*Blog, error)
 	}
 	RecentPublicationsProvider interface {
 		RecentPublications() ([]*Publication, error)
@@ -35,18 +44,26 @@ type (
 	}
 )
 
-func New(l *log.Logger, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider) (*Value, error) {
+func New(l *log.Logger, domain string, bp BlogProvider, ppp PopularPublicationsProvider, rpp RecentPublicationsProvider, rp RubricsProvider) (*Value, error) {
+	blog, err := bp.BlogByDomain(domain)
+	if err != nil {
+		return nil, err
+	}
 	return &Value{
 		logger:                      l,
+		blog:                        blog,
 		popularPublicationsProvider: ppp,
 		recentPublicationsProvider:  rpp,
 		rubricsProvider:             rp,
 		Meta: &meta.Meta{
-			Title:           "",
-			MetaKeywords:    "",
-			MetaDescription: "",
+			Title:           blog.Title,
+			MetaKeywords:    blog.Keywords,
+			MetaDescription: blog.Description,
 		},
 	}, nil
+}
+func (v *Value) Blog() *Blog {
+	return v.blog
 }
 func (v *Value) PopularPublications() []*Publication {
 	publications, err := v.popularPublicationsProvider.PopularPublications()

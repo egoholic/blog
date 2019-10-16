@@ -51,16 +51,10 @@ func thereIsABlog(blog *gherkin.DataTable) error {
 	for attrIdx, attrName := range header {
 		attrs[attrName.Value] = values[attrIdx].Value
 	}
-	fmt.Printf("\n\n\n%#v\n\n\n", attrs)
 	return Insert(Must(NewBlog(attrs)))
 }
 func iSeeTheBlog(blog *gherkin.DataTable) error {
-	html, err := page.HTML()
-	if err != nil {
-		return err
-	}
-	fmt.Printf("\n\nHTML:\n%s\n\n\n", html)
-	title, err := page.Find("#bhv-blog__title").Text()
+	title, err := page.FindByID("bhv-blog__title").Text()
 	if err != nil {
 		return err
 	}
@@ -68,7 +62,7 @@ func iSeeTheBlog(blog *gherkin.DataTable) error {
 	if title != expectedTitle {
 		return fmt.Errorf("Expected to find blog title: '%s', got: '%s'", title, expectedTitle)
 	}
-	description, err := page.Find("#bhv-blog__description").Text()
+	description, err := page.FindByID("bhv-blog__description").Text()
 	if err != nil {
 		return err
 	}

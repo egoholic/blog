@@ -77,6 +77,8 @@ func (r *Repository) BlogByDomain(domain string) (*reading.Blog, error) {
 	var blog reading.Blog
 	row := r.db.QueryRowContext(r.ctx, blogQuery, domain)
 	err := row.Scan(&blog.Title)
-	fmt.Printf("publication-reading repo err: %s", err.Error())
+	if err != nil {
+		fmt.Printf("publication-reading repo err: %s", err.Error())
+	}
 	return &blog, err
 }

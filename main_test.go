@@ -18,9 +18,9 @@ import (
 	"github.com/DATA-DOG/godog"
 	"github.com/DATA-DOG/godog/colors"
 	"github.com/DATA-DOG/godog/gherkin"
-	. "github.com/egoholic/blog/lib/store/seed"
 	rubricPreviewingRepo "github.com/egoholic/blog/rubric/previewing/repository/postgresql"
 	"github.com/sclevine/agouti"
+	. "github.com/stoa-bd/blogging-schema/seed"
 )
 
 var (

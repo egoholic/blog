@@ -9,33 +9,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Configuration struct {
-	dbCredentials *DBCredentials
-}
-
-type DBCredentials struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DBName   string
-}
-
 var (
-	DBConnectionString          string
-	DBConnectionStringWithoutDB string
-
-	Domain      string
-	Port        int
-	dbHost      string
-	dbPort      int
-	dbUser      string
-	dbPwd       string
-	DBName      string
-	config      *cfg.Cfg
-	err         error
-	LogFile     *os.File
-	PIDFilePath string
+	DBConnectionString string
+	Domain             string
+	Port               int
+	dbHost             string
+	dbPort             int
+	dbUser             string
+	dbPwd              string
+	DBName             string
+	config             *cfg.Cfg
+	err                error
+	LogFile            *os.File
+	PIDFilePath        string
 )
 
 func init() {
@@ -95,11 +81,6 @@ func init() {
 		panic(err)
 	}
 	config.AddHelpCommand()
-	DBConnectionString = genConnectionString(true)
-	DBConnectionStringWithoutDB = genConnectionString(false)
-}
-
-func genConnectionString(withDBName bool) string {
 	var sb strings.Builder
 	if len(dbHost) > 0 {
 		sb.WriteString(fmt.Sprintf("host=%s ", dbHost))
@@ -111,11 +92,10 @@ func genConnectionString(withDBName bool) string {
 	if len(dbUser) > 0 {
 		sb.WriteString(fmt.Sprintf("user=%s ", dbUser))
 	}
-	if withDBName {
-		if len(DBName) > 0 {
-			sb.WriteString(fmt.Sprintf("dbname=%s ", DBName))
-		}
+	if len(DBName) > 0 {
+		sb.WriteString(fmt.Sprintf("dbname=%s ", DBName))
 	}
+
 	sb.WriteString("sslmode=disable")
-	return sb.String()
+	DBConnectionString = sb.String()
 }

@@ -83,10 +83,12 @@ $ go run targets/web/main.go help
 ```
 
 ### How to create DB and schema?
+To create DB you need to clone: https://github.com/stoa-bd/blogging-schema and then run in its directory:
 
 ```$ ./bin/createdb.sh <DB-PREFIX, like: production, development, test-acceptance>```
 
 ### How to seed DB?
+To create DB you need to clone: https://github.com/stoa-bd/blogging-schema and then run in its directory:
 
 ```$ ./bin/seed.sh <DB-PREFIX, like: production, development, test-acceptance>```
 
